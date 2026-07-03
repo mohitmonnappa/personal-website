@@ -172,6 +172,22 @@ body {
   background: transparent !important;
 }
 
+.code-copy-btn {
+  vertical-align: middle;
+}
+
+.code-copy-btn .check-icon {
+  display: none;
+}
+
+.code-copy-btn[data-copied="true"] .copy-icon {
+  display: none;
+}
+
+.code-copy-btn[data-copied="true"] .check-icon {
+  display: block;
+}
+
 .prose-article table {
   width: 100%;
   border-collapse: collapse;

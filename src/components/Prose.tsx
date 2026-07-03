@@ -6,6 +6,7 @@ import rehypeRaw from "rehype-raw";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeStringify from "rehype-stringify";
 import { clsx } from "clsx";
+import { rehypeCommandCopy } from "@/lib/rehype-command-copy";
 
 async function renderMarkdown(source: string) {
   const file = await unified()
@@ -14,6 +15,7 @@ async function renderMarkdown(source: string) {
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(rehypePrettyCode, { theme: "vitesse-dark", keepBackground: false })
+    .use(rehypeCommandCopy)
     .use(rehypeStringify)
     .process(source);
 

@@ -3,6 +3,7 @@ import { Space_Grotesk, Source_Serif_4, IBM_Plex_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { MotionProvider } from "@/components/MotionProvider";
+import { CodeCopyHandler } from "@/components/CodeCopyHandler";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -49,6 +50,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
         </MotionProvider>
+        <CodeCopyHandler />
       </body>
     </html>
   );

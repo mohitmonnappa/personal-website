@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { Container } from "@/components/Container";
 import { Eyebrow } from "@/components/Eyebrow";
 import { Prose } from "@/components/Prose";
+import { StickySectionTabs } from "@/components/StickySectionTabs";
 import type { Machine } from "@/lib/machines-data";
 
 export function MachineDetail({
@@ -47,22 +48,27 @@ export function MachineDetail({
         </div>
       </div>
 
-      <div className="mb-24 space-y-14">
-        {machine.phases.map((phase, i) => (
-          <section key={phase.title}>
-            <div className="flex items-baseline gap-3">
-              <span className="font-mono text-sm text-stone">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h2 className="font-display text-xl font-semibold tracking-tight text-ink">
-                {phase.title}
-              </h2>
-            </div>
-            <div className="mt-5">
+      <div className="mb-24">
+        <StickySectionTabs topOffset="4rem">
+          {machine.phases.map((phase, i) => (
+            <StickySectionTabs.Item
+              key={phase.title}
+              id={phase.title}
+              title={
+                <span className="flex items-baseline gap-3">
+                  <span className="font-mono text-sm text-stone">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="font-display text-lg font-semibold tracking-tight text-ink">
+                    {phase.title}
+                  </span>
+                </span>
+              }
+            >
               <Prose source={phase.body} />
-            </div>
-          </section>
-        ))}
+            </StickySectionTabs.Item>
+          ))}
+        </StickySectionTabs>
       </div>
     </Container>
   );

@@ -16,7 +16,7 @@ export default function WriteupsPage() {
       <PageHeader
         eyebrow="Field notes"
         title="Writeups"
-        description="Wargames and machines I've worked through, written up as I go."
+        description="Challenges and machines I've worked through, written up as I go."
       />
 
       <div className="mb-24 grid gap-5 sm:grid-cols-2">
@@ -35,7 +35,7 @@ export default function WriteupsPage() {
               />
             </div>
             <p className="mt-3 text-[15px] leading-relaxed text-stone">
-              A wargame that builds Linux and command-line fundamentals one
+              A challenge that builds Linux and command-line fundamentals one
               level at a time &mdash; each level unlocks the password for the
               next.
             </p>
@@ -52,7 +52,7 @@ export default function WriteupsPage() {
           <div>
             <div className="flex items-start justify-between">
               <h2 className="font-display text-xl font-semibold tracking-tight text-ink">
-                HTB &amp; TryHackMe machines
+                HackTheBox &amp; TryHackMe machines
               </h2>
               <ArrowUpRight
                 size={18}

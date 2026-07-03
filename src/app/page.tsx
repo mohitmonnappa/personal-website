@@ -70,8 +70,8 @@ export default function Home() {
               />
             </div>
             <p className="mt-3 text-[15px] leading-relaxed text-stone">
-              OverTheWire Bandit walkthroughs, plus condensed HTB and TryHackMe
-              machine writeups as I work through them.
+              OverTheWire Bandit walkthroughs, plus condensed HackTheBox and
+              TryHackMe machine writeups as I work through them.
             </p>
           </Link>
 

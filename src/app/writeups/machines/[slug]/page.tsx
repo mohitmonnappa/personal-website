@@ -1,0 +1,85 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Container } from "@/components/Container";
+import { Eyebrow } from "@/components/Eyebrow";
+import { Prose } from "@/components/Prose";
+import { machines, getMachine } from "@/lib/machines-data";
+
+export function generateStaticParams() {
+  return machines.map((m) => ({ slug: m.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const machine = getMachine(slug);
+  return { title: machine?.name ?? "Machine" };
+}
+
+export default async function MachinePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const machine = getMachine(slug);
+  if (!machine) notFound();
+
+  return (
+    <Container>
+      <div className="pb-14 pt-14 sm:pt-20">
+        <Link
+          href="/writeups/machines"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-stone transition-colors hover:text-pine"
+        >
+          <ArrowLeft size={15} /> All machines
+        </Link>
+
+        <Eyebrow className="mt-8">{machine.platform}</Eyebrow>
+        <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+          {machine.name}
+        </h1>
+
+        <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+          <span className="font-medium text-clay">{machine.difficulty}</span>
+          <span className="text-line">&middot;</span>
+          <span className="text-stone">{machine.os}</span>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {machine.tags.map((t) => (
+            <span
+              key={t}
+              className="rounded-full border border-line px-2.5 py-1 font-mono text-xs text-stone"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-24 space-y-14">
+        {machine.phases.map((phase, i) => (
+          <section key={phase.title}>
+            <div className="flex items-baseline gap-3">
+              <span className="font-mono text-sm text-stone">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h2 className="font-display text-xl font-semibold tracking-tight text-ink">
+                {phase.title}
+              </h2>
+            </div>
+            <div className="mt-5">
+              <Prose source={phase.body} />
+            </div>
+          </section>
+        ))}
+      </div>
+    </Container>
+  );
+}

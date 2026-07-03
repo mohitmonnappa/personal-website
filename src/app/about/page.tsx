@@ -58,16 +58,20 @@ export default function AboutPage() {
         </Button>
       </div>
 
-      <div className="mt-16">
-        <Eyebrow>Certifications</Eyebrow>
-        <ul className="mt-5 divide-y divide-line border-y border-line">
+      <div className="mt-20">
+        <Eyebrow>Credentials</Eyebrow>
+        <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink">
+          Certifications
+        </h2>
+
+        <ul className="mt-6 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-paper-raised">
           {certifications.map((cert) => (
             <li key={cert.title}>
               <Link
                 href={cert.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center justify-between gap-4 py-4"
+                className="group flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-pine-tint/40"
               >
                 <span>
                   <span className="block font-medium text-ink">

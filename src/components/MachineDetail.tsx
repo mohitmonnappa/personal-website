@@ -1,43 +1,27 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Container } from "@/components/Container";
 import { Eyebrow } from "@/components/Eyebrow";
 import { Prose } from "@/components/Prose";
-import { machines, getMachine } from "@/lib/machines-data";
+import type { Machine } from "@/lib/machines-data";
 
-export function generateStaticParams() {
-  return machines.map((m) => ({ slug: m.slug }));
-}
-
-export async function generateMetadata({
-  params,
+export function MachineDetail({
+  machine,
+  backHref,
+  backLabel,
 }: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const machine = getMachine(slug);
-  return { title: machine?.name ?? "Machine" };
-}
-
-export default async function MachinePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
+  machine: Machine;
+  backHref: string;
+  backLabel: string;
 }) {
-  const { slug } = await params;
-  const machine = getMachine(slug);
-  if (!machine) notFound();
-
   return (
     <Container>
       <div className="pb-14 pt-14 sm:pt-20">
         <Link
-          href="/writeups/machines"
+          href={backHref}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-stone transition-colors hover:text-pine"
         >
-          <ArrowLeft size={15} /> All machines
+          <ArrowLeft size={15} /> {backLabel}
         </Link>
 
         <Eyebrow className="mt-8">{machine.platform}</Eyebrow>

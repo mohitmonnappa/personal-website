@@ -207,3 +207,13 @@ export function getMachine(slug: string): Machine | undefined {
 export function machinesByPlatform(platform: Machine["platform"]): Machine[] {
   return machines.filter((m) => m.platform === platform);
 }
+
+// URL segment for each platform, e.g. /writeups/tryhackme, /writeups/hackthebox
+export const PLATFORM_ROUTES = {
+  TryHackMe: "tryhackme",
+  HackTheBox: "hackthebox",
+} as const;
+
+export function platformSlug(platform: Machine["platform"]): string {
+  return PLATFORM_ROUTES[platform];
+}

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { Container } from "@/components/Container";
 import { PageHeader } from "@/components/PageHeader";
 import { getBanditLevels } from "@/lib/content";
@@ -25,15 +24,9 @@ function CollectionCard({
       className="group flex flex-col justify-between rounded-2xl border border-line bg-paper-raised p-7 transition-all hover:-translate-y-0.5 hover:border-pine/40 hover:shadow-[0_8px_24px_-12px_rgba(27,29,26,0.18)]"
     >
       <div>
-        <div className="flex items-start justify-between">
-          <h2 className="font-display text-xl font-semibold tracking-tight text-ink">
-            {title}
-          </h2>
-          <ArrowUpRight
-            size={18}
-            className="text-stone transition-colors group-hover:text-pine"
-          />
-        </div>
+        <h2 className="font-display text-xl font-semibold tracking-tight text-ink">
+          {title}
+        </h2>
         <p className="mt-3 text-[15px] leading-relaxed text-stone">
           {description}
         </p>

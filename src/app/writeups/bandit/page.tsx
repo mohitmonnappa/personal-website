@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Container } from "@/components/Container";
 import { PageHeader } from "@/components/PageHeader";
 import { getBanditLevels } from "@/lib/content";
+import { banditTeaches } from "@/lib/bandit-teaches";
 
 export const metadata: Metadata = { title: "OverTheWire: Bandit" };
 
@@ -36,7 +37,16 @@ export default function BanditIndexPage() {
                 <span className="font-mono text-sm text-stone">
                   {String(lvl.level).padStart(2, "0")}
                 </span>
-                <span className="font-medium text-ink">{lvl.title}</span>
+                <span>
+                  <span className="block font-medium text-ink">
+                    {lvl.title}
+                  </span>
+                  {banditTeaches[lvl.level] && (
+                    <span className="mt-0.5 block text-sm text-stone">
+                      {banditTeaches[lvl.level]}
+                    </span>
+                  )}
+                </span>
               </span>
               <ArrowRight
                 size={16}

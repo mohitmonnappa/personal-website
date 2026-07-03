@@ -2,6 +2,9 @@
 /Gaming Server/
 /PenTesting notes .ctb
 
+# Working notes - not for version control
+/TODO.md
+
 # dependencies
 /node_modules
 /.pnp

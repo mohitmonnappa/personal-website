@@ -49,9 +49,9 @@ export function Hero() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="mt-8 flex flex-wrap gap-3"
         >
-          <Button href="/projects">View projects</Button>
-          <Button href="/writeups" variant="secondary">
-            Read writeups
+          <Button href="/writeups">Read writeups</Button>
+          <Button href="/projects" variant="secondary">
+            View projects
           </Button>
         </motion.div>
       </motion.div>

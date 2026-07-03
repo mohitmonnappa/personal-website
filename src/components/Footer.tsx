@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Mail, Flag, Shield } from "lucide-react";
+import { Mail, Shield } from "lucide-react";
 import { Container } from "./Container";
-import { GithubGlyph, LinkedinGlyph } from "./icons";
+import { GithubGlyph, LinkedinGlyph, TryHackMeGlyph } from "./icons";
 
 const SOCIALS = [
   {
@@ -17,7 +17,7 @@ const SOCIALS = [
   {
     href: "https://tryhackme.com/p/bobchamp",
     label: "TryHackMe",
-    node: <Flag size={18} strokeWidth={1.75} />,
+    node: <TryHackMeGlyph size={18} />,
   },
   {
     href: "https://app.hackthebox.com/users/1984837",

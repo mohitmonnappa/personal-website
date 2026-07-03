@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, Mail, Flag, Shield } from "lucide-react";
+import { ArrowUpRight, Mail, Shield } from "lucide-react";
 import { Container } from "@/components/Container";
 import { PageHeader } from "@/components/PageHeader";
 import { Eyebrow } from "@/components/Eyebrow";
 import { Button } from "@/components/Button";
-import { GithubGlyph, LinkedinGlyph } from "@/components/icons";
+import { GithubGlyph, LinkedinGlyph, TryHackMeGlyph } from "@/components/icons";
 import { certifications } from "@/lib/about-data";
 
 export const metadata: Metadata = { title: "About" };
@@ -24,7 +24,7 @@ const SOCIALS = [
   {
     href: "https://tryhackme.com/p/bobchamp",
     label: "TryHackMe",
-    node: <Flag size={17} strokeWidth={1.75} />,
+    node: <TryHackMeGlyph size={17} />,
   },
   {
     href: "https://app.hackthebox.com/users/1984837",

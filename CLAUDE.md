@@ -52,15 +52,19 @@ which one a given section uses:
      walkthroughs, numbered sequentially; `getBanditLevels()` /
      `getBanditLevel()` parse the level number from the filename
 
-2. **Placeholder TypeScript data** for two sections that don't have real
-   content yet:
-   - `src/lib/machines-data.ts` — HTB/TryHackMe machine writeups. Currently
-     one fictional sample ("Warehouse") demonstrating the recon → foothold →
-     privesc → loot phase structure. Real writeups will be condensed from
-     raw per-machine notes (an example lives in the gitignored `Gaming
+2. **Mostly-placeholder TypeScript data** for two sections that don't have
+   real content yet:
+   - `src/lib/machines-data.ts` — HTB/TryHackMe machine writeups, keyed by
+     `platform: "HackTheBox" | "TryHackMe"` and rendered through the shared
+     `MachinesList`/`MachineDetail`/`MachineCard` components. `"gaming-server"`
+     is a real, condensed TryHackMe writeup (source: the gitignored `Gaming
      Server/` folder — enum/exploit/loot/privesc markdown with image
-     attachments, Obsidian-vault style) — that conversion hasn't happened
-     yet, don't assume `machines-data.ts` reflects real engagements.
+     attachments, Obsidian-vault style); `"ledger"` (HackTheBox) is still a
+     fictional placeholder — don't assume every entry in this file reflects a
+     real engagement. `machinesByPlatform()` / `platformSlug()` /
+     `PLATFORM_ROUTES` map a `Machine` to its `/writeups/hackthebox` or
+     `/writeups/tryhackme` URL segment — add a platform by extending
+     `PLATFORM_ROUTES`, not by hardcoding a new route.
    - `src/lib/notes-data.ts` — pentesting methodology reference, a
      two-level section → note tree. Placeholder content standing in for a
      CherryTree notebook (`PenTesting notes .ctb`, gitignored, SQLite-based)
@@ -96,6 +100,17 @@ onto a dark `pre` background (`prose-article` styles in `globals.css`) even
 though the page itself is light — this is an intentional contrast choice,
 not a leftover from an earlier dark-theme direction.
 
+A custom rehype plugin, `src/lib/rehype-command-copy.ts`, runs after
+`rehype-pretty-code` in the same pipeline and mutates the highlighted hast
+tree to inject a copy button onto shell-block lines matching `^\$\s`
+(consuming `\`-continued lines into one joined command), so only the command
+text is copyable — never the output printed below it. Since `Prose` output
+is inert `dangerouslySetInnerHTML`, the button's click behavior is wired up
+separately via event delegation in `src/components/CodeCopyHandler.tsx`
+(mounted once in `layout.tsx`, listens for `.code-copy-btn` clicks on
+`document`) rather than component state — if you touch either half, keep
+the `data-copy` attribute contract between them in sync.
+
 ## Route structure
 
 Routes mirror the content model above; `[slug]`/`[level]`/`[...slug]`
@@ -104,9 +119,13 @@ dynamic routes all use `generateStaticParams` for full static generation:
 - `/` — home
 - `/about`
 - `/projects`, `/projects/[slug]`
-- `/writeups` — hub linking to the two writeup collections below
+- `/writeups` — hub linking to the writeup collections below
 - `/writeups/bandit`, `/writeups/bandit/[level]` — sequential, has prev/next
-- `/writeups/machines`, `/writeups/machines/[slug]`
+- `/writeups/hackthebox`, `/writeups/hackthebox/[slug]` and
+  `/writeups/tryhackme`, `/writeups/tryhackme/[slug]` — kept as separate
+  routes/pages per platform (not a combined `/writeups/machines`) even
+  though both read from the same `machines` array in `machines-data.ts` and
+  share `MachinesList`/`MachineDetail`
 - `/notes`, `/notes/[...slug]` — catch-all under a shared
   `src/app/notes/layout.tsx` that renders the persistent `NotesSidebar`;
   the sidebar tree comes from `noteSections` in `notes-data.ts`, so adding a
@@ -129,10 +148,15 @@ reducedMotion="user"` (`src/components/MotionProvider.tsx`) so
 covers it.
 
 `lucide-react` (pinned to `1.23.0`) no longer ships brand/logo icons
-(`Github`, `Linkedin`, etc. don't exist in this version) — GitHub and
-LinkedIn glyphs are hand-rolled inline SVGs in `src/components/icons.tsx`.
-Check `node_modules/lucide-react/dist/esm/lucide-react.mjs` for actual
-export names before assuming an icon exists.
+(`Github`, `Linkedin`, etc. don't exist in this version) — GitHub, LinkedIn,
+and TryHackMe (`TryHackMeGlyph`) glyphs are hand-rolled inline SVGs in
+`src/components/icons.tsx`, using the platforms' real brand marks where one
+was supplied. Check `node_modules/lucide-react/dist/esm/lucide-react.mjs`
+for actual export names before assuming an icon exists. HackTheBox still
+falls back to a generic lucide `Shield` in `Footer.tsx`/`about/page.tsx` —
+no real HackTheBox mark has been sourced yet (a plain `logokit.com` image
+URL was tried and 403s without an API key); don't treat that placeholder as
+final.
 
 The `TraceDivider` component (a thin animated SVG line between homepage
 sections) is the site's one deliberate "signature" decorative motif — it's

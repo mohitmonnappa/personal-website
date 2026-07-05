@@ -36,7 +36,7 @@ export default async function BanditLevelPage({
   const next = idx < levels.length - 1 ? levels[idx + 1] : null;
 
   return (
-    <Container>
+    <Container article>
       <div className="pb-10 pt-14 sm:pt-20">
         <Link
           href="/writeups/bandit"

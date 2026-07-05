@@ -16,7 +16,7 @@ export function MachineDetail({
   backLabel: string;
 }) {
   return (
-    <Container>
+    <Container article>
       <div className="pb-14 pt-14 sm:pt-20">
         <Link
           href={backHref}

@@ -12,7 +12,7 @@ export default function BanditIndexPage() {
   const levels = getBanditLevels();
 
   return (
-    <Container>
+    <Container article>
       <Link
         href="/writeups"
         className="mt-14 inline-flex items-center gap-1.5 text-sm font-medium text-stone transition-colors hover:text-pine sm:mt-20"

@@ -5,15 +5,15 @@
 // rehype-pretty-code, which is what wraps each source line in
 // <span data-line>.
 //
-// Line buttons are `position: sticky; right` rather than `absolute`: each
-// code line's span is stretched to the full width of the code block by
-// `code { display: grid }` (CSS Grid's default item-stretch), so for
-// commands that fit within the visible width, sticky and absolute render
-// identically at the block's right edge. For a command long enough to
-// force horizontal scrolling, sticky keeps the button pinned to the
-// visible edge as the line scrolls by, instead of leaving it sitting
-// off-screen at the true end of the line until you scroll all the way
-// there.
+// Each line's span is made a flex row (`ml-auto` on the button pushes it
+// to the row's own right edge, which `code { display: grid }` stretches
+// to the code block's full width - see `code-line` in globals.css), so
+// the button lands on the block's right border for every command
+// regardless of that command's own length, instead of sitting at a
+// different x position per line. It's also `position: sticky; right`, so
+// for a command long enough to force horizontal scrolling, the button
+// stays clamped to the visible edge instead of sitting off-screen at the
+// true end of the line until you scroll all the way there.
 
 type HastNode = {
   type: string;
@@ -69,7 +69,7 @@ function copyButton(
   const positionClasses =
     variant === "block"
       ? ["absolute", "right-2", "top-2"]
-      : ["sticky", "right-2", "align-middle"];
+      : ["sticky", "right-2", "ml-auto", "shrink-0"];
 
   return {
     type: "element",
@@ -135,7 +135,7 @@ function addLineButton(lineSpan: HastNode, command: string) {
   const existingClass = Array.isArray(props.className)
     ? (props.className as string[])
     : [];
-  props.className = [...existingClass, "group"];
+  props.className = [...existingClass, "group", "code-line"];
   lineSpan.children = [
     ...(lineSpan.children ?? []),
     copyButton(command, "Copy command", "line"),

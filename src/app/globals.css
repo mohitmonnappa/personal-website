@@ -176,6 +176,11 @@ body {
   position: relative;
 }
 
+.code-line {
+  display: flex;
+  align-items: center;
+}
+
 .code-copy-btn {
   color: rgba(232, 230, 223, 0.55);
 }

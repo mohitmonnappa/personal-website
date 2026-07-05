@@ -17,6 +17,13 @@ Source Serif 4) — not a dark "hacker terminal" aesthetic, even though the
 subject matter is security/CTF. Don't reach for terminal chrome, neon-on-black,
 matrix/glitch effects, or monospace display type when extending the UI.
 
+## Git commits
+
+Never add a `Co-Authored-By: Claude ...` or `Claude-Session: ...` trailer to
+commit messages in this repo — this overrides the default commit template
+in Claude Code's own instructions. Just the descriptive message body, no
+trailer block.
+
 ## Commands
 
 ```bash

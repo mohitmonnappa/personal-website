@@ -203,8 +203,7 @@ $ chmod 600 secretKey
 $ ssh -i secretKey john@10.48.153.3
 Enter passphrase for key 'secretKey': letmein
 john@exploitable:~$ id
-uid=1000(john) gid=1000(john) groups=1000(john),4(adm),24(cdrom),27(sudo) \\
-,30(dip),46(plugdev),108(lxd)
+uid=1000(john) gid=1000(john) groups=1000(john),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),108(lxd)
 \`\`\`
 
 ![Logged in over SSH as john, dropped to a shell prompt](/writeups/gaming-server/foothold-ssh-login-success.png)

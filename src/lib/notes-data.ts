@@ -8,7 +8,7 @@
 // -> inline code, link -> markdown links, one internal "node N" link ->
 // resolved to its site path). One color was semantic rather than
 // decorative: `#4cdd40` (light green) was the author's own convention for
-// "this is a command", used 344 times across the notebook - those runs
+// "this is a command", used 585 times across the notebook - those runs
 // are wrapped in `<span class="cmd">` (styled `var(--color-clay)` in
 // globals.css, since actual green was ruled out as visually redundant
 // with the pine/link color) instead of being fenced as code, so they stay
@@ -19,8 +19,7 @@
 // within a run of text were turned into markdown hard breaks (trailing
 // two spaces) so the author's original line-by-line layout still renders
 // as line breaks, since remark's default softbreak collapses to a space.
-// The empty "test" scratch node was excluded. No wording was changed,
-// including typos in the source.
+// No wording was changed, including typos in the source.
 //
 // The tree is *not* a fixed two-level section/note shape - CherryTree
 // nodes nest arbitrarily deep, and a "category" node can carry its own
@@ -60,28 +59,29 @@ Application enumeration`,
 
 ### No port scanning
 
- : -sn  
-nmap -sn [IP_Range]  
-nmap -sn 192.168.0.1-254 or 192.168.0.1/24
+ : <span class="cmd">-sn</span>  
+<span class="cmd">nmap -sn [IP_Range]</span>  
+<span class="cmd">nmap -sn 192.168.0.1-254 or 192.168.0.1/24</span>
 
-### Using ARP: -PR
+### Using ARP:
 
+<span class="cmd">-PR</span>  
 default if host is in same subnet  
--PR: only ARP scan, eg: nmap -sn -PR 192.168.0.1-254 or 192.168.0.1/24  
-another way: **arp-scan** [IP_Range]
+<span class="cmd">-PR</span>: only ARP scan, eg: <span class="cmd">nmap -sn -PR 192.168.0.1-254 or 192.168.0.1/24</span>  
+another way: <span class="cmd">arp-scan [IP_Range]</span>
 
 ### Using ICMP ping:
 
- -PE, -PP, -PM  
-ICMP **echo** packet: usually blocked: nmap -sn -PE [IP_Range]  
-ICMP **timestamp** packet: nmap -sn -PP [IP_Range]  
-ICMP **address** mask query: nmap -sn -PM [IP_Range]
+ <span class="cmd">-PE, -PP, -PM</span>  
+ICMP **echo** packet: usually blocked: <span class="cmd">nmap -sn -PE [IP_Range]</span>  
+ICMP **timestamp** packet: <span class="cmd">nmap -sn -PP [IP_Range]</span>  
+ICMP **address** mask query: <span class="cmd">nmap -sn -PM [IP_Range]</span>
 
 TCP Syn ping: sends syn, expects syn/ack : -PS   
-TCP Ack ping: sends ack, expects RST if host is up : -PA  
-UDP ping: expects ICMP port unreachable packet if host is up and closed port : -PU
+TCP Ack ping: sends ack, expects RST if host is up : <span class="cmd">-PA</span>  
+UDP ping: expects ICMP port unreachable packet if host is up and closed port : <span class="cmd">-PU</span>
 
--Pn: No pinging hosts, treat all as alive and perform host discovery
+<span class="cmd">-Pn</span>: No pinging hosts, treat all as alive and perform host discovery
 
 ## Port scans
 
@@ -107,12 +107,12 @@ UDP ping: expects ICMP port unreachable packet if host is up and closed port : -
 
 udp, null (no flags set), fin (finish flag set) and xmas (psh, urg and fin set: malformed packet) scans respond to only **closed ports with RST** packet.  
 Otherwise it is open|filtered  
-Window scan -sW : checks window field of rst packet, sometimes responds differently acc to firewall so **may** tell open ports.
+Window scan <span class="cmd">-sW</span> : checks window field of rst packet, sometimes responds differently acc to firewall so **may** tell open ports.
 
 ## NSE: Scripting Engine
 
 **Searching**:   
-	grep "category_name or protocol or anything specific" /usr/share/nmap/scripts/script.db
+	<span class="cmd">grep "category_name or protocol or anything specific" /usr/share/nmap/scripts/script.db</span>
 
 **Categories of scripts:**  
 • safe : Won't affect the target  
@@ -127,43 +127,43 @@ Window scan -sW : checks window field of rst packet, sometimes responds differen
 
 [https://nmap.org/book/man-bypass-firewalls-ids.html](https://nmap.org/book/man-bypass-firewalls-ids.html)
 
--f : Fragment the packets ,less likely that the packets will be detected by a firewall or IDS.  
---mtu <number> : accepts maximum transmission unit size to use for the packets sent. This must be a **multiple of 8**.  
---scan-delay [time] ms : add a delay between packets sent. useful if the network is unstable and evading time-based firewall/IDS triggers.  
---badsum : generates invalid checksum for packets. Any real TCP/IP stack would drop this packet, however, firewalls may potentially respond automatically, 	without bothering to check the checksum of the packet. As such, this switch can be used to determine the presence of a firewall/IDS.
+<span class="cmd">-f</span> : Fragment the packets ,less likely that the packets will be detected by a firewall or IDS.  
+<span class="cmd">--mtu <number></span> : accepts maximum transmission unit size to use for the packets sent. This must be a **multiple of 8**.  
+<span class="cmd">--scan-delay [time] ms</span> : add a delay between packets sent. useful if the network is unstable and evading time-based firewall/IDS triggers.  
+<span class="cmd">--badsum</span> : generates invalid checksum for packets. Any real TCP/IP stack would drop this packet, however, firewalls may potentially respond automatically, 	without bothering to check the checksum of the packet. As such, this switch can be used to determine the presence of a firewall/IDS.
 
--D [decoy1], [<decoy2>], [ME] : RND for random; makes it appear to the remote host that the host(s) you specify as decoys are scanning the target network too. IDS won't know which IP was scanning them and which were innocent decoys. **ME position of your IP address**  
---proxies [Comma-separated list of proxy URLs] (Relay TCP connections through a chain of proxies)  
---randomize-hosts (Randomize target host order) : make the scans less obvious to various network monitoring systems, especially when you combine it with slow timing options. Tells Nmap to shuffle each group of up to 16384 hosts before it scans them.
+<span class="cmd">-D [decoy1], [<decoy2>], [ME]</span> : RND for random; makes it appear to the remote host that the host(s) you specify as decoys are scanning the target network too. IDS won't know which IP was scanning them and which were innocent decoys. **ME position of your IP address**  
+<span class="cmd">--proxies [Comma-separated list of proxy URLs]</span> (Relay TCP connections through a chain of proxies)  
+<span class="cmd">--randomize-hosts (Randomize target host order)</span> : make the scans less obvious to various network monitoring systems, especially when you combine it with slow timing options. Tells Nmap to shuffle each group of up to 16384 hosts before it scans them.
 
--S [IP_Addres] (Spoof source address)  
---spoof-mac [MAC address, prefix, or vendor name] (Spoof MAC address)  
---source-port [portnumber] or -g [portnumber] (Spoof source port number) : argument examples are Apple, 0, 01:02:03:04:05:06, deadbeefcafe, 0020F2, and Cisco. 
+<span class="cmd">-S [IP_Addres]</span> (Spoof source address)  
+<span class="cmd">--spoof-mac [MAC address, prefix, or vendor name]</span> (Spoof MAC address)  
+<span class="cmd">--source-port [portnumber] or -g [portnumber]</span> (Spoof source port number) : argument examples are Apple, 0, 01:02:03:04:05:06, deadbeefcafe, 0020F2, and Cisco. 
 
--sI [ZOMBIE_IP] [your_IP] : Zombie scan`,
+<span class="cmd">-sI [ZOMBIE_IP] [your_IP]</span> : Zombie scan`,
           },
           {
             slug: "wordlists",
             title: "Wordlists",
             body: `## Directory and Files
 
-/usr/share/wordlists/seclists/Discovery/Web-Content/common.txt  
-/usr/share/wordlists/seclists/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-medium.txt
+<span class="cmd">/usr/share/wordlists/seclists/Discovery/Web-Content/common.txt</span>  
+<span class="cmd">/usr/share/wordlists/seclists/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-medium.txt</span>
 
-/usr/share/wordlists/dirbuster/directory-list-2.3-*.txt  
-/usr/share/wordlists/dirbuster/directory-list-1.0.txt  
-/usr/share/wordlists/dirb/big.txt  
-/usr/share/wordlists/dirb/common.txt
+<span class="cmd">/usr/share/wordlists/dirbuster/directory-list-2.3-*.txt</span>  
+<span class="cmd">/usr/share/wordlists/dirbuster/directory-list-1.0.txt</span>  
+<span class="cmd">/usr/share/wordlists/dirb/big.txt</span>  
+<span class="cmd">/usr/share/wordlists/dirb/common.txt</span>
 
 ## Extensions
 
-/usr/share/seclists/Discovery/Web-Content/web-extensions.txt  
-/usr/share/seclists/Discovery/Web-Content/web-extensions-big.txt  
-/usr/share/wordlists/dirb/extensions_common.txt 
+<span class="cmd">/usr/share/seclists/Discovery/Web-Content/web-extensions.txt</span>  
+<span class="cmd">/usr/share/seclists/Discovery/Web-Content/web-extensions-big.txt</span>  
+<span class="cmd">/usr/share/wordlists/dirb/extensions_common.txt </span>
 
 ## Subdomains
 
-/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt`,
+<span class="cmd">/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt</span>`,
           },
           {
             slug: "tools",
@@ -229,8 +229,8 @@ vhost mode
 | --xs | Exclude specific status codes |  |  
 | -r | Follows HTTP redirects. |  |
 
-if dns architecture is not configured properly then -u must have IP and --domain and --append-domain flags must be used  
-else: -u can have the domain name directly, rather than the IP`,
+if dns architecture is not configured properly then <span class="cmd">-u</span> must have IP and <span class="cmd">--domain</span> and <span class="cmd">--append-domain</span> flags must be used  
+else: <span class="cmd">-u</span> can have the domain name directly, rather than the IP`,
               },
               {
                 slug: "ffuf",
@@ -256,7 +256,7 @@ else: -u can have the domain name directly, rather than the IP`,
 
 ### GET
 
-Add FUZZ in the URL itself (escape <span class="cmd">&</span> with <span class="cmd">\\</span> if needed: <span class="cmd">\\&param=FUZZ</span>
+Add FUZZ in the URL itself (escape <span class="cmd">&</span> with <span class="cmd">\\</span> if needed: <span class="cmd">\\&param=FUZZ</span> )
 
 ### POST
 
@@ -268,7 +268,7 @@ Add FUZZ in the URL itself (escape <span class="cmd">&</span> with <span class="
 ## Subdomain Enumeration
 
 <span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/namelist.txt -H "Host: FUZZ.[domain]" -u http://[MACHINE_IP]</span>  
-use ip address, sometimes the name wont work even after adding it to /etc/hosts
+use ip address, sometimes the name wont work even after adding it to <span class="cmd">/etc/hosts</span>
 
 Filter by size of response:  
 <span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/namelist.txt  -fs {size} -H "Host: FUZZ.[domain]" -u http://[MACHINE_IP]</span>`,
@@ -293,23 +293,31 @@ Filter by size of response:
 | -b | Cookie | -b ‘sessionid=somevalue’ |  
 | -T | Uploads files to server, same as HTTP PUT | -T [filename.txt] [http://target/upload] |
 
-Common headers:  
-Content-Type:   
-Cookie:   
-Authorization: 
+### Common headers:
 
-Instead of adding username and password using -u flag:  
-	curl username:password@{MACHINE_IP]
+<span class="cmd">Content-Type: </span>  
+<span class="cmd">Cookie: </span>  
+<span class="cmd">Authorization: </span>
 
+### Authentication:
+
+Instead of adding username and password using <span class="cmd">-u</span> flag:  
+	<span class="cmd">curl username:password@{MACHINE_IP]</span>
+
+### Cookies
+
+:  
 Cookies can also be mentioned in the header:  
 	Eg: cookie is sessionid=somevalue  
-	curl -b ‘sessionid=somevalue’ http://MACHINE_IP:port or  
-	curl -H ‘Cookie: sessionid=somevalue’ http://MACHINE_IP:port
+	<span class="cmd">curl -b 'sessionid=somevalue' http://MACHINE_IP:port or</span>  
+<span class="cmd">	curl -H ‘Cookie: sessionid=somevalue’ http://MACHINE_IP:port</span>
 
 Note: In WINDOWS: only double quotes must be used and quotes inside data must be escaped: \\"
 
-Content types:  
-json: application/json`,
+### Content types:
+
+<span class="cmd">json: application/json</span>  
+<span class="cmd">form: application/x-www-form-urlencoded</span>`,
               },
             ],
           },
@@ -320,10 +328,15 @@ json: application/json`,
               {
                 slug: "passive",
                 title: "Passive",
-                body: `• nslookup [OPTIONS] [DOMAIN_NAME] [SERVER]  
+                body: `### NSLookup
+
+<span class="cmd">nslookup [OPTIONS] [DOMAIN_NAME] [SERVER]</span>  
 	options: a, aaaa, mx, txt, soa (start of authority)  
-	server: cloudflare: 1.1.1.1 or 1.0.0.1, google: 8.8.8.8 or 8.8.4.4, quad9: 9.9.9.9  
-• dig [DOMAIN_NAME] [TYPE]  
+	server: cloudflare: 1.1.1.1 or 1.0.0.1, google: 8.8.8.8 or 8.8.4.4, quad9: 9.9.9.9
+
+### dig
+
+<span class="cmd">dig [DOMAIN_NAME] [TYPE]</span>  
 	type: options above
 
 ## Google Dorking
@@ -339,7 +352,7 @@ json: application/json`,
 
 ### Subdomain enumeration:
 
-site:*.domain.com -site:www.domain.com
+<span class="cmd">site:*.domain.com -site:www.domain.com</span>
 
 ## Javascript Obfuscation:
 
@@ -354,46 +367,44 @@ js compiler: [https://jsconsole.com/](https://jsconsole.com/)`,
 • traceroute or tracert  
 • telnet (not imp)  
 • nc (to grab banners during initial connection)  
-• Add domain to /etc/hosts: echo "[IP] [domain]" | sudo tee -a /etc/hosts
+• Add domain to <span class="cmd">/etc/hosts</span>: <span class="cmd">echo "[IP] [domain]" | sudo tee -a /etc/hosts</span>
 
 ## Directories and file enumeration
 
-gobuster dir -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt -x html,txt,php, js -u http://[MACHINE_IP]  
-gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php, txt, html, js -u http://[MACHINE_IP]
+<span class="cmd">gobuster dir -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt -x html,txt,php, js -u http://[MACHINE_IP]</span>  
+<span class="cmd">gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php, txt, html, js -u http://[MACHINE_IP]</span>
 
-ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt -u http://[MACHINE_IP] -e .html,.txt.,php,.js
+<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt -u http://[MACHINE_IP] -e .html,.txt.,php,.js</span>
 
 ## Subdomain Enumeration
 
 ### DNS bruteforce:
 
 gobuster:  
-gobuster dns --domain [example.thm] -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt
+<span class="cmd">gobuster dns --domain [example.thm] -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt</span>
 
 ffuf:  
-ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/namelist.txt -H "Host: FUZZ.acmeitsupport.thm" -u http://[MACHINE_IP]  
-use ip address, sometimes the name wont work even after adding it to /etc/hosts
+<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/namelist.txt -H "Host: FUZZ.acmeitsupport.thm" -u http://[MACHINE_IP]</span>  
+<span class="cmd">use ip address, sometimes the name wont work even after adding it to /etc/hosts</span>
 
 Filter by size of response:  
-ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/namelist.txt  -fs {size} -H "Host: FUZZ.[MACHINE_IP]" -u http://[MACHINE_IP]
+<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/namelist.txt  -fs {size} -H "Host: FUZZ.[MACHINE_IP]" -u http://[MACHINE_IP]</span>
 
 ## Virtual Host Enumeration
 
-gobuster vhost -u http://[MACHINE_IP] --domain example.thm -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt --append-domain
-
-gobuster vhost -u http://[MACHINE_IP] -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt
+<span class="cmd">gobuster vhost -u http://[MACHINE_IP] --domain example.thm -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt --append-domain</span>
 
 ## FeroxBuster
 
 Discovers unlinked content in web applications  
-Install: curl -sL https://raw.githubusercontent.com/epi052/feroxbuster/main/install-nix.sh | sudo bash -s $HOME/.local/bin
+Install: <span class="cmd">curl -sL https://raw.githubusercontent.com/epi052/feroxbuster/main/install-nix.sh | sudo bash -s $HOME/.local/bin</span>
 
 ## API Fuzzing
 
-git clone [https://github.com/PandaSt0rm/webfuzz_api.git](https://github.com/PandaSt0rm/webfuzz_api.git)  
-cd webfuzz_api  
-pip3 install -r requirements.txt  
-python3 api_fuzzer.py http://IP:PORT
+<span class="cmd">git clone </span><span class="cmd">[https://github.com/PandaSt0rm/webfuzz_api.git](https://github.com/PandaSt0rm/webfuzz_api.git)</span>  
+<span class="cmd">cd webfuzz_api</span>  
+<span class="cmd">pip3 install -r requirements.txt</span>  
+<span class="cmd">python3 api_fuzzer.py http://IP:PORT</span>
 
 [https://tryhackme.com/room/modernwebstacks](https://tryhackme.com/room/modernwebstacks)
 
@@ -500,7 +511,7 @@ The combination of X-Frame-Options: DENY, X-Content-Type-Options: nosniff, and R
 
 ## Nmap Script
 
-smb-os-discovery.nse
+<span class="cmd">smb-os-discovery.nse</span>
 
 ## List available shares
 
@@ -542,16 +553,16 @@ Password login: <span class="cmd">-U username%password</span>
 Done in the system that has files, say the target machine  
 creating the physical folder that will hold the data.
 
-\`mkdir\`\` [share_name]\`  
-\`echo\` \`'[path to share_name] hostname(rw,sync,no_root_squash)'\` \`>>\`\` /etc/exports\`
+<span class="cmd">mkdir [share_name]</span>  
+<span class="cmd">echo '[path to share_name] hostname(rw,sync,no_root_squash)' >> /etc/exports</span>
 
 ## Mount NFS share
 
 Done in the system that needs the files which are available in target machine  
 Entry point for the target machine
 
-\`mkdir\`\` ~/target_nfs\`  
-\`mount\`\` [MACHINE_IP]:[path to share] ~/target_nfs\`
+<span class="cmd">mkdir ~/target_nfs</span>  
+<span class="cmd">mount [MACHINE_IP]:[path to share] ~/target_nfs</span>
 
 Any file that we place in the target system's share folder, will be accessible in our system
 
@@ -820,7 +831,7 @@ Directly sending the file to the upload point:
 
 **Magic number of JPEG files: **
 
-FF D8 FF DB
+<span class="cmd">FF D8 FF DB</span>
 
 • Add ****4 random character in the start**** of file.  
 • Open it in ****hexeditor**** and change the bits in the beginning to the above magic number.  
@@ -1795,28 +1806,28 @@ List installed programs with version and vendor (pre windows 11):
       {
         slug: "regex",
         title: "regex",
-        body: `-E flag in grep
+        body: `<span class="cmd">-E</span> flag in grep
 
-Match from start : ^  
-Match from ending: $
+Match from start : <span class="cmd">^</span>  
+Match from ending: <span class="cmd">$</span>
 
-(a) : group parts of a regex, processed together  
-[a-z] : list of characters to search for  
-{1,10} :  number or range, indicates how many times pattern must repeat  
-[^k] : **excludes** character from charset
+<span class="cmd">(a)</span> : group parts of a regex, processed together  
+<span class="cmd">[a-z]</span> : list of characters to search for  
+<span class="cmd">{1,10}</span> :  number or range, indicates how many times pattern must repeat  
+<span class="cmd">[^k]</span> : **excludes** character from charset
 
-\\w: alphanumeric  
-\\d: digit  
-\\s: whitespace  
+<span class="cmd">\\w</span>: alphanumeric  
+<span class="cmd">\\d</span>: digit  
+<span class="cmd">\\s</span>: whitespace  
 **Capital of above is opp**, eg not alphanumeric, not digit and so on  
-. : any character (to capture **.** use **\\.** that way it escapes it
+<span class="cmd">.</span> : any character (to capture **.** use **\\.** that way it escapes it
 
-* : 0 or more  
-+ : 1 or more  
-? : 0 or 1
+<span class="cmd">* </span>: 0 or more  
+<span class="cmd">+</span> : 1 or more  
+<span class="cmd">?</span> : 0 or 1
 
-| : OR operator  
-.* : AND operator, order matters`,
+<span class="cmd">|</span> : OR operator  
+<span class="cmd">.*</span> : AND operator, order matters`,
       },
       {
         slug: "tmux",
@@ -1954,38 +1965,44 @@ Right: <span class="cmd">prefix }</span>
         title: "Processes",
         body: `### Viewing processes
 
-Our user or current user: ps  
-All users: ps aux  
+Our user or current user: <span class="cmd">ps</span>  
+All users: <span class="cmd">ps aux</span>  
 • List all services:  
-	systemctl list-units --type=service OR  
-	ps -aux  
+	<span class="cmd">systemctl list-units --type=service OR</span>  
+<span class="cmd">	ps -aux</span>  
 • View background processes  
-	jobs
+	<span class="cmd">jobs</span>
 
-### Network connection with associated ports: netstat -a
+### Network connection with associated ports:
 
-### Kill processes: kill [process_id]
+<span class="cmd">netstat -a</span>
 
-### Start services: systemctl [option] [service]
+### Kill processes:
 
+<span class="cmd">kill [process_id]</span>
+
+### Start services:
+
+<span class="cmd">systemctl [option] [service]</span>  
 Options:  
 start stop enable disable  
-Eg: systemctl start apache2
+Eg: <span class="cmd">systemctl start apache2</span>
 
 ### Background and foreground tasks in terminal
 
 **Background**  
-At the end of the command, add:   &  
-Or: Ctrl+z
+At the end of the command, add:   <span class="cmd">&</span>  
+Or: <span class="cmd">Ctrl+z</span>
 
 **Foreground**  
-fg [id]  - id is displayed after executing jobs
+<span class="cmd">fg [id] </span> - id is displayed after executing jobs
 
-### Services listening on system: ss -nltu
+### Services listening on system:
 
-n: dont resolve the service  
-t, u: TCP and UDP  
-l: listening services
+<span class="cmd">ss -nltu</span>  
+<span class="cmd">n</span>: dont resolve the service  
+<span class="cmd">t, u</span>: TCP and UDP  
+<span class="cmd">l</span>: listening services
 
 ## Scheduling processes and tasks
 
@@ -1998,31 +2015,31 @@ l: listening services
 		"Unit": Specifies a description for the timer.   
 		"Timer": Specifies when to start the timer and when to activate it.   
 		"Install": Specifies where to install the timer.  
-Eg: mytimer.timer
+Eg: <span class="cmd">mytimer.timer</span>
 
-\`[Unit]\`  
-\`Description=My Timer\`  
-\`[Timer]\`  
-\`OnBootSec=3min\`  
-\`OnUnitActiveSec=1hour\`  
-\`[Install]\`  
-\`WantedBy=timers.target\`
+<span class="cmd">[Unit]</span>  
+<span class="cmd">Description=My Timer</span>  
+<span class="cmd">[Timer]</span>  
+<span class="cmd">OnBootSec=3min</span>  
+<span class="cmd">OnUnitActiveSec=1hour</span>  
+<span class="cmd">[Install]</span>  
+<span class="cmd">WantedBy=timers.target</span>
 
 Run only once after boot: OnBootSec  
 Run regularly: OnUntiActiveSec
 
 2. Create service  
 	Set a description and specify the full path to the script we want to run.  
-Eg: mytimer.service
+Eg: <span class="cmd">mytimer.service</span>
 
-\`[Unit]\`  
-\`Description=My Service\`
+<span class="cmd">[Unit]</span>  
+<span class="cmd">Description=My Service</span>
 
-\`[Service]\`  
-\`ExecStart=/full/path/to/my/script.sh\`
+<span class="cmd">[Service]</span>  
+<span class="cmd">ExecStart=/full/path/to/my/script.sh</span>
 
-\`[Install]\`  
-\`WantedBy=multi-user.target\`
+<span class="cmd">[Install]</span>  
+<span class="cmd">WantedBy=multi-user.target</span>
 
 3. Activate timer  
 	Reload systemd: sudo systemctl daemon-reload  
@@ -2031,7 +2048,7 @@ Eg: mytimer.service
 
 ### • Cron
 
-Store task in file called: **crontab**
+Store task in file called: <span class="cmd">**crontab**</span>
 
 | Time Frame | Description |  
 | --- | --- |  
@@ -2043,20 +2060,20 @@ Store task in file called: **crontab**
 
 Eg: 
 
-\`# System Update\`  
-\`0 */6 * * * /path/to/update_software.sh\`  
+<span class="cmd"># System Update</span>  
+<span class="cmd">0 */6 * * * /path/to/update_software.sh</span>  
 executed once every sixth hour. This is indicated by the entry 0 */6 in the hour column.
 
-\`# Execute Scripts\`  
-\`0 0 1 * * /path/to/scripts/run_scripts.sh\`  
+<span class="cmd"># Execute Scripts</span>  
+<span class="cmd">0 0 1 * * /path/to/scripts/run_scripts.sh</span>  
 executed every first day of the month at midnight. This is indicated by the entries 0 in the minute and hour columns and 1 in the days of the month column.
 
-\`# Cleanup DB\`  
-\`0 0 * * 0 /path/to/scripts/clean_database.sh\`  
+<span class="cmd"># Cleanup DB</span>  
+<span class="cmd">0 0 * * 0 /path/to/scripts/clean_database.sh</span>  
 executed every Sunday at midnight. This is specified by the entries 0 and 0 in the minute and hour columns and 0 in the days of the week column.
 
-\`# Backups\`  
-\`0 0 * * 7 /path/to/scripts/backup.sh\`  
+<span class="cmd"># Backups</span>  
+<span class="cmd">0 0 * * 7 /path/to/scripts/backup.sh</span>  
 executed every Sunday at midnight. This is indicated by the entries 0 and 0 in the minute and hour columns and 7 in the days of the week column.`,
       },
       {
@@ -2186,17 +2203,20 @@ First use sort and then pipe it to uniq
 
 ### Split line with delimiter:
 
-### cut -d ":"  -f [postion of the column]
-
+<span class="cmd">cut -d ":"  -f [postion of the column]</span>  
 one character delimiter only
 
-### Replace a specific character in a line: tr "to change" "change with"
+### Replace a specific character in a line:
+
+<span class="cmd">tr "to change" "change with" </span>
 
 ### Rotating or shifting characters
 
 <span class="cmd">cat file.txt | tr "a-zA-z" "c-za-bC-ZA-B"</span>
 
-### Clear representation of multiple fields: column -t
+### Clear representation of multiple fields:
+
+<span class="cmd">column -t</span>
 
 ### print specific field values: awk
 
@@ -2207,8 +2227,8 @@ one character delimiter only
 
 **Sed: **<span class="cmd">sed 's/pattern1/pattern2/g'</span>  
 change specific names in the whole file or standard input  
-"s" flag at the beginning: substitute command. Then the pattern we want to replace.   
-After slash (/), enter replacement pattern in the third position. Finally "g" flag stands for replacing all matches. **Eg: **<span class="cmd">sed 's/bin/HTB/g'</span>
+"<span class="cmd">s</span>" flag at the beginning: substitute command. Then the pattern we want to replace.   
+After slash (<span class="cmd">/</span>), enter replacement pattern in the third position. Finally "<span class="cmd">g</span>" flag stands for replacing all matches. **Eg: **<span class="cmd">sed 's/bin/HTB/g'</span>
 
 ### Hex Encoding
 
@@ -2239,19 +2259,19 @@ Running previous command
 ## user permissions and file permissions
 
 Non root permissions: <span class="cmd"><user> ALL=(ALL:!root) NOPASSWD: ALL</span>  
-	UID of root: #0 but sudo (versions < 1.8.28) bypasses this with sudo -u#-1 [command] (CVE-2019-14287)  
+	UID of root: #0 but sudo (versions < 1.8.28) bypasses this with <span class="cmd">sudo -u#-1 [command]</span> (CVE-2019-14287)  
 To see contents of directory: Execute permission must be present  
 To modify files or subdirectories of directory: Write permission must be present
 
 Change owner of a file:  
-chown [user]:[group] [file/directory]
+<span class="cmd">chown [user]:[group] [file/directory]</span>
 
 Sticky bit: In a shared directory, only the file's owner, the directory's owner, or the root user can delete or rename files. Other users can still access the directory but can’t modify files they don’t own.  
 Sticky bit is capitalized (T): all other users do not have execute (x) permissions, therefore, cannot see the contents of the folder nor run any programs from it.   
 Sticky bit is lowercase (t): execute (x) permissions have been set, others can view and run the file but no modify or delete it.
 
 Execute a command as a different user:   
-su -c "ls /etc/shadow or any other command" [root or other user] 
+<span class="cmd">su -c "ls /etc/shadow or any other command" [root or other user] </span>
 
 ## Modifying users:
 
@@ -2280,7 +2300,7 @@ su -c "ls /etc/shadow or any other command" [root or other user]
 | lists PCI devices | lspci |
 
 • Info about a specific package:   
-	apt-cache show [package_name]
+<span class="cmd">	apt-cache show [package_name]</span>
 
 ## find
 
@@ -2297,25 +2317,25 @@ Here, {} is placeholder for the file name backslash ; to escape the ;
 
 ## changing directories
 
-pushd [directory you want to go]  
-popd # returns to original directory
+<span class="cmd">pushd [directory you want to go]</span>  
+<span class="cmd">popd</span> # returns to original directory
 
 ## location of program/tool
 
-which [program_name]
+<span class="cmd">which [program_name]</span>
 
 ### Full path of a file
 
-realpath [filename]
+<span class="cmd">realpath [filename]</span>
 
 ## info about files: ls
 
 **decreasing order of modification date**: newest first  
-ls -t  
-ls -t | head -n 1    #shows top most, most recent modified
+<span class="cmd">ls -t</span>  
+<span class="cmd">ls -t | head -n 1</span>    #shows top most, most recent modified
 
 **inode number of file**  
-ls -i
+<span class="cmd">ls -i</span>
 
 ## Location of log files of common services
 
@@ -2414,14 +2434,14 @@ Add computers to a domain:
 ## Backup a local Directory to our Backup-Server
 
 <span class="cmd">rsync -av /path/to/mydirectory user@backup_server:/path/to/backup/directory</span>  
--a: archive: preserve the original file attributes  
--v: verbose
+<span class="cmd">-a</span>: archive: preserve the original file attributes  
+<span class="cmd">-v</span>: verbose
 
 <span class="cmd">rsync -avz --backup --backup-dir=/path/to/backup/folder --delete /path/to/mydirectory user@backup_server:/path/to/backup/directory</span>
 
-backing up the mydirectory to the remote backup_server, preserving the original file attributes and enabled compression (-z) for faster transfers.   
---backup option creates incremental backups in the directory /path/to/backup/folder,   
---delete option removes files from the remote host that is no longer present in the source directory.
+backing up the mydirectory to the remote backup_server, preserving the original file attributes and enabled compression (<span class="cmd">-z</span>) for faster transfers.   
+<span class="cmd">--backup</span> option creates incremental backups in the directory <span class="cmd">/path/to/backup/folder</span>,   
+<span class="cmd">--delete</span> option removes files from the remote host that is no longer present in the source directory.
 
 ## Restoring backup
 
@@ -2441,7 +2461,7 @@ backing up the mydirectory to the remote backup_server, preserving the original 
 <span class="cmd">#!bin/bash</span>  
 <span class="cmd">rsync -avz -e ssh /path/to/mydirectory user@backup_server:/path/to/backup/directory</span>  
 • give execute permission and open crontab -e and add the backup file  
-	\`0 * * * * /path/to/RSYNC_Backup.sh\``,
+	<span class="cmd">0 * * * * /path/to/RSYNC_Backup.sh</span>`,
       },
       {
         slug: "rdp",
@@ -2500,14 +2520,14 @@ If an attacker mimics the format of a trusted instruction, the model often can't
 ChatML (Chat Markup Language) is a clear, XML-inspired language used by open-source models (such as the Qwen family of models) to structure conversations with role-based tags (e.g. system, user, assistant) and special tokens like <|im_start|> and <|im_end|> (instant message start/end) to denote when a message has been received. This can be used in combination with the role-based tags to tell the model how input should be processed. Consider some examples:
 
 Tool output  
-<|im_start|>tool  
-{"name": "weather_api", "result": "Rainy and 12°C"}  
-<|im_end|>
+<span class="cmd"><|im_start|>tool</span>  
+<span class="cmd">{"name": "weather_api", "result": "Rainy and 12°C"}</span>  
+<span class="cmd"><|im_end|></span>
 
 User prompt  
-<|im_start|>user  
-Can you explain what prompt injection is?  
-<|im_end|>
+<span class="cmd"><|im_start|>user</span>  
+<span class="cmd">Can you explain what prompt injection is?</span>  
+<span class="cmd"><|im_end|></span>
 
 ### Harmony
 

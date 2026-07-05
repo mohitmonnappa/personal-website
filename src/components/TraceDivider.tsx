@@ -13,10 +13,10 @@ export function TraceDivider() {
       >
         <motion.path
           d="M0 20 C 200 20, 260 4, 420 4 S 640 36, 800 36 S 1020 20, 1200 20"
-          stroke="var(--color-line)"
+          stroke="var(--color-clay)"
           strokeWidth="1.5"
-          initial={{ pathLength: 0, opacity: 0 }}
-          whileInView={{ pathLength: 1, opacity: 1 }}
+          initial={{ pathLength: 0 }}
+          whileInView={{ pathLength: 1 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 1.1, ease: "easeInOut" }}
         />

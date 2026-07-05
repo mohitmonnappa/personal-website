@@ -155,6 +155,10 @@ body {
   border-radius: 0.35em;
 }
 
+.prose-article .cmd {
+  color: var(--color-clay);
+}
+
 .prose-article pre {
   font-family: var(--font-mono);
   font-size: 0.86em;

@@ -59,8 +59,8 @@ which one a given section uses:
      walkthroughs, numbered sequentially; `getBanditLevels()` /
      `getBanditLevel()` parse the level number from the filename
 
-2. **Mostly-placeholder TypeScript data** for two sections that don't have
-   real content yet:
+2. **TypeScript data modules** for two sections, one now fully real, one
+   still partly placeholder:
    - `src/lib/machines-data.ts` — HTB/TryHackMe machine writeups, keyed by
      `platform: "HackTheBox" | "TryHackMe"` and rendered through the shared
      `MachinesList`/`MachineDetail`/`MachineCard` components. `"gaming-server"`
@@ -84,18 +84,34 @@ which one a given section uses:
      a `Machine` to its `/writeups/hackthebox` or `/writeups/tryhackme` URL
      segment — add a platform by extending `PLATFORM_ROUTES`, not by
      hardcoding a new route.
-   - `src/lib/notes-data.ts` — pentesting methodology reference, a
-     two-level section → note tree. Placeholder content standing in for a
-     CherryTree notebook (`PenTesting notes .ctb`, gitignored, SQLite-based)
-     that will eventually be exported and converted into this shape.
+   - `src/lib/notes-data.ts` — pentesting methodology reference, and now the
+     **real** content: converted from the gitignored CherryTree notebook
+     `PenTesting notes .ctb` (a SQLite database — `node`/`children` tables
+     for the tree, `grid`/`image` tables for embedded tables/screenshots
+     spliced back in by character offset, rich-text run attributes mapped to
+     markdown). The conversion script itself isn't checked in (one-off, not
+     part of the build); see the comment at the top of `notes-data.ts` for
+     exactly what it did and what it deliberately dropped (colors,
+     justification) or normalized (single newlines → markdown hard breaks
+     so the original line-by-line layout still renders, since remark's
+     default softbreak collapses to a space). **`NoteNode` is a genuine
+     recursive tree, not a fixed two-level shape** — CherryTree nodes nest
+     arbitrarily deep, and a node can carry both its own `body` *and*
+     `children` (e.g. "Windows File Transfer"). Only nodes with a non-empty
+     `body` are routable (`findNote`/`allNoteParams` filter on this); a node
+     with children but no body of its own (a pure category, e.g.
+     "Exploitation") is sidebar/index-only — don't assume every tree node
+     has a page. `NotesSidebar.tsx` and `notes/page.tsx` each walk the
+     recursive tree themselves (rendering a plain label for no-body nodes,
+     a link for nodes with a body) rather than sharing one component, since
+     their styling differs enough that extracting one didn't pay for itself.
 
    The `Gaming Server/` and `PenTesting notes .ctb` raw sources are
    intentionally excluded from git via `.gitignore` — they're personal raw
-   notes, not site content. When doing the real conversion work later, the
-   target shape is whatever `machines-data.ts` / `notes-data.ts` currently
-   define (`Machine`/`MachinePhase`, `NoteSection`/`NoteLeaf`), not a new
-   content pipeline — reshape/extend those types rather than introducing a
-   third content source.
+   notes, not site content. `machines-data.ts`'s `"ledger"` entry is the
+   only remaining placeholder in either file; if you convert it later,
+   reshape/extend `Machine`/`MachinePhase` rather than introducing a third
+   content source.
 
 ### Markdown rendering: unified/remark/rehype, not MDX
 
@@ -155,8 +171,11 @@ dynamic routes all use `generateStaticParams` for full static generation:
   share `MachinesList`/`MachineDetail`
 - `/notes`, `/notes/[...slug]` — catch-all under a shared
   `src/app/notes/layout.tsx` that renders the persistent `NotesSidebar`;
-  the sidebar tree comes from `noteSections` in `notes-data.ts`, so adding a
-  note = adding an entry there, not creating new route files
+  the tree comes from `noteTree` in `notes-data.ts` and can be arbitrarily
+  deep (see above), so adding a note = adding a node there, not creating
+  new route files. A URL segment count doesn't map to a fixed "section" vs
+  "note" level the way it used to — `findNote` walks the tree per segment
+  and only resolves if the matched node has a `body`
 
 ## Design system
 

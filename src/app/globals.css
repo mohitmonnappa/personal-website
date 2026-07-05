@@ -172,8 +172,18 @@ body {
   background: transparent !important;
 }
 
+.code-line--command {
+  position: relative;
+  padding-right: 2.25em;
+}
+
 .code-copy-btn {
-  vertical-align: middle;
+  color: rgba(232, 230, 223, 0.55);
+}
+
+.code-copy-btn:hover,
+.code-copy-btn:focus-visible {
+  color: rgba(232, 230, 223, 1);
 }
 
 .code-copy-btn .check-icon {

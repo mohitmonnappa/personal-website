@@ -1,7 +1,12 @@
 import Link from "next/link";
-import { Mail, Shield } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Container } from "./Container";
-import { GithubGlyph, LinkedinGlyph, TryHackMeGlyph } from "./icons";
+import {
+  GithubGlyph,
+  HackTheBoxGlyph,
+  LinkedinGlyph,
+  TryHackMeGlyph,
+} from "./icons";
 
 const SOCIALS = [
   {
@@ -22,7 +27,7 @@ const SOCIALS = [
   {
     href: "https://app.hackthebox.com/users/1984837",
     label: "HackTheBox",
-    node: <Shield size={18} strokeWidth={1.75} />,
+    node: <HackTheBoxGlyph size={18} />,
   },
   {
     href: "mailto:monnappamohit@gmail.com",

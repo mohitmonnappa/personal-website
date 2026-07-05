@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, Mail, Shield } from "lucide-react";
+import { ArrowUpRight, Mail } from "lucide-react";
 import { Container } from "@/components/Container";
 import { PageHeader } from "@/components/PageHeader";
 import { Eyebrow } from "@/components/Eyebrow";
 import { Button } from "@/components/Button";
-import { GithubGlyph, LinkedinGlyph, TryHackMeGlyph } from "@/components/icons";
+import {
+  GithubGlyph,
+  HackTheBoxGlyph,
+  LinkedinGlyph,
+  TryHackMeGlyph,
+} from "@/components/icons";
 import { certifications } from "@/lib/about-data";
 
 export const metadata: Metadata = { title: "About" };
@@ -29,7 +34,7 @@ const SOCIALS = [
   {
     href: "https://app.hackthebox.com/users/1984837",
     label: "HackTheBox",
-    node: <Shield size={17} strokeWidth={1.75} />,
+    node: <HackTheBoxGlyph size={17} />,
   },
 ];
 

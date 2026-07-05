@@ -172,9 +172,8 @@ body {
   background: transparent !important;
 }
 
-.code-line--command {
+.code-block--copyable {
   position: relative;
-  padding-right: 2.25em;
 }
 
 .code-copy-btn {

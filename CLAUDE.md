@@ -59,12 +59,17 @@ which one a given section uses:
      `MachinesList`/`MachineDetail`/`MachineCard` components. `"gaming-server"`
      is a real, condensed TryHackMe writeup (source: the gitignored `Gaming
      Server/` folder — enum/exploit/loot/privesc markdown with image
-     attachments, Obsidian-vault style); `"ledger"` (HackTheBox) is still a
-     fictional placeholder — don't assume every entry in this file reflects a
-     real engagement. `machinesByPlatform()` / `platformSlug()` /
-     `PLATFORM_ROUTES` map a `Machine` to its `/writeups/hackthebox` or
-     `/writeups/tryhackme` URL segment — add a platform by extending
-     `PLATFORM_ROUTES`, not by hardcoding a new route.
+     attachments, Obsidian-vault style); its proof screenshots are copied into
+     `public/writeups/gaming-server/` with descriptive filenames (not the
+     original `Pasted image ....png` names) and referenced from the phase
+     bodies as plain markdown images. This writeup has no `Loot` phase and
+     never prints the user/root flag values anywhere in the page text or
+     screenshots — don't reintroduce either when editing it. `"ledger"`
+     (HackTheBox) is still a fictional placeholder — don't assume every entry
+     in this file reflects a real engagement. `machinesByPlatform()` /
+     `platformSlug()` / `PLATFORM_ROUTES` map a `Machine` to its
+     `/writeups/hackthebox` or `/writeups/tryhackme` URL segment — add a
+     platform by extending `PLATFORM_ROUTES`, not by hardcoding a new route.
    - `src/lib/notes-data.ts` — pentesting methodology reference, a
      two-level section → note tree. Placeholder content standing in for a
      CherryTree notebook (`PenTesting notes .ctb`, gitignored, SQLite-based)
@@ -149,15 +154,14 @@ covers it.
 
 `lucide-react` (pinned to `1.23.0`) no longer ships brand/logo icons
 (`Github`, `Linkedin`, etc. don't exist in this version) — GitHub, LinkedIn,
-and TryHackMe (`TryHackMeGlyph`) glyphs are hand-rolled inline SVGs in
-`src/components/icons.tsx`, using the platforms' real brand marks where one
-was supplied. Check `node_modules/lucide-react/dist/esm/lucide-react.mjs`
-for actual export names before assuming an icon exists. HackTheBox still
-falls back to a generic lucide `Shield` in `Footer.tsx`/`about/page.tsx` —
-no real HackTheBox mark has been sourced yet (a plain `logokit.com` image
-URL was tried and 403s without an API key); don't treat that placeholder as
-final.
+TryHackMe (`TryHackMeGlyph`), and HackTheBox (`HackTheBoxGlyph`) glyphs are
+hand-rolled inline SVGs in `src/components/icons.tsx`, using the platforms'
+real brand marks. Check `node_modules/lucide-react/dist/esm/lucide-react.mjs`
+for actual export names before assuming an icon exists.
 
 The `TraceDivider` component (a thin animated SVG line between homepage
 sections) is the site's one deliberate "signature" decorative motif — it's
 used sparingly on purpose; don't scatter it across every section boundary.
+Its stroke is `var(--color-clay)` (matching the project-card subtitle
+color), and the draw-in/erase cycle loops on a 4s interval for as long as
+the home page is mounted rather than playing once on scroll-into-view.

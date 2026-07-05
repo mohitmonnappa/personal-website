@@ -64,25 +64,32 @@ which one a given section uses:
    - `src/lib/machines-data.ts` — HTB/TryHackMe machine writeups, keyed by
      `platform: "HackTheBox" | "TryHackMe"` and rendered through the shared
      `MachinesList`/`MachineDetail`/`MachineCard` components. `"gaming-server"`
-     is a real, condensed TryHackMe writeup (source: the gitignored `Gaming
-     Server/` folder — enum/exploit/loot/privesc markdown with image
-     attachments, Obsidian-vault style); its proof screenshots are copied into
-     `public/writeups/gaming-server/` with descriptive filenames (not the
-     original `Pasted image ....png` names) and referenced from the phase
-     bodies as plain markdown images. This writeup has no `Loot` phase and
-     never prints the user/root flag values anywhere in the page text or
-     screenshots — don't reintroduce either when editing it. `"ledger"`
+     and `"basic-pentesting"` are real, condensed TryHackMe writeups; `"ledger"`
      (HackTheBox) is still a fictional placeholder — don't assume every entry
-     in this file reflects a real engagement. `machinesByPlatform()` /
-     `platformSlug()` / `PLATFORM_ROUTES` map a `Machine` to its
-     `/writeups/hackthebox` or `/writeups/tryhackme` URL segment — add a
-     platform by extending `PLATFORM_ROUTES`, not by hardcoding a new route.
+     in this file reflects a real engagement. Raw source notes for a real
+     writeup aren't necessarily inside this repo: `"gaming-server"` came from
+     the gitignored `Gaming Server/` folder at the project root, while
+     `"basic-pentesting"` was read directly from an Obsidian vault path
+     outside the repo entirely (`C:\Users\...\Obsidian Vaults\...`) — both are
+     enum/exploit markdown with an `attachments/` subfolder of Obsidian-style
+     `Pasted image ....png` screenshots. Either way, proof screenshots get
+     copied into `public/writeups/<slug>/` with descriptive filenames (not
+     the original `Pasted image ....png` names) and referenced from the phase
+     bodies as plain markdown images. `"gaming-server"` specifically has no
+     `Loot` phase and never prints the user/root flag values anywhere in the
+     page text or screenshots — don't reintroduce either when editing it;
+     that redaction call is per-writeup, not a blanket rule (`"basic-pentesting"`
+     does print its final cracked password, per instruction when it was
+     added). `machinesByPlatform()` / `platformSlug()` / `PLATFORM_ROUTES` map
+     a `Machine` to its `/writeups/hackthebox` or `/writeups/tryhackme` URL
+     segment — add a platform by extending `PLATFORM_ROUTES`, not by
+     hardcoding a new route.
    - `src/lib/notes-data.ts` — pentesting methodology reference, a
      two-level section → note tree. Placeholder content standing in for a
      CherryTree notebook (`PenTesting notes .ctb`, gitignored, SQLite-based)
      that will eventually be exported and converted into this shape.
 
-   Both raw sources (`Gaming Server/`, `PenTesting notes .ctb`) are
+   The `Gaming Server/` and `PenTesting notes .ctb` raw sources are
    intentionally excluded from git via `.gitignore` — they're personal raw
    notes, not site content. When doing the real conversion work later, the
    target shape is whatever `machines-data.ts` / `notes-data.ts` currently
@@ -114,14 +121,22 @@ not a leftover from an earlier dark-theme direction.
 
 A custom rehype plugin, `src/lib/rehype-command-copy.ts`, runs after
 `rehype-pretty-code` in the same pipeline and mutates the highlighted hast
-tree to inject a copy button onto shell-block lines matching `^\$\s`
-(consuming `\`-continued lines into one joined command), so only the command
-text is copyable — never the output printed below it. Since `Prose` output
-is inert `dangerouslySetInnerHTML`, the button's click behavior is wired up
-separately via event delegation in `src/components/CodeCopyHandler.tsx`
-(mounted once in `layout.tsx`, listens for `.code-copy-btn` clicks on
-`document`) rather than component state — if you touch either half, keep
-the `data-copy` attribute contract between them in sync.
+tree to inject copy buttons. For shell blocks, only lines matching `^\$\s`
+get a button (consuming `\`-continued lines into one joined command), so
+output printed below a command is never copyable. Code blocks with no such
+lines (php, html, text, ...) get one whole-block button instead, appended
+to the `pre`. Per-line buttons rely on `code { display: grid }` stretching
+every line's `span[data-line]` to the block's full width: the button's
+line is made a flex row (`.code-line` in `globals.css`) with `margin-left:
+auto` on the button so it sits on the block's right border regardless of
+that line's own text length, plus `position: sticky; right` so it stays
+reachable without scrolling when a command is long enough to overflow the
+block. Since `Prose` output is inert `dangerouslySetInnerHTML`, the
+button's click behavior is wired up separately via event delegation in
+`src/components/CodeCopyHandler.tsx` (mounted once in `layout.tsx`, listens
+for `.code-copy-btn` clicks on `document`) rather than component state — if
+you touch either half, keep the `data-copy` attribute contract between them
+in sync.
 
 ## Route structure
 

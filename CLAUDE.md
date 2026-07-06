@@ -17,13 +17,6 @@ Source Serif 4) — not a dark "hacker terminal" aesthetic, even though the
 subject matter is security/CTF. Don't reach for terminal chrome, neon-on-black,
 matrix/glitch effects, or monospace display type when extending the UI.
 
-## Git commits
-
-Never add a `Co-Authored-By: Claude ...` or `Claude-Session: ...` trailer to
-commit messages in this repo — this overrides the default commit template
-in Claude Code's own instructions. Just the descriptive message body, no
-trailer block.
-
 ## Commands
 
 ```bash
@@ -206,3 +199,11 @@ used sparingly on purpose; don't scatter it across every section boundary.
 Its stroke is `var(--color-clay)` (matching the project-card subtitle
 color), and the draw-in/erase cycle loops on a 4s interval for as long as
 the home page is mounted rather than playing once on scroll-into-view.
+
+If asked to integrate a pasted UI snippet or component demo (21st.dev-style
+prompts, shadcn `/ui` components, etc.), check `TODO.md`'s "Saved component
+prompts" log first — several dark-theme/shadcn/GSAP-based demos were already
+evaluated there and rejected in favor of custom rebuilds using this site's
+own tokens and Framer Motion (see `Nav.tsx`, `TraceDivider.tsx`). Don't
+re-introduce `next-themes`, shadcn design tokens, GSAP, or
+`class-variance-authority` on the strength of a new pasted demo.

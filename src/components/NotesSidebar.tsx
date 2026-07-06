@@ -8,11 +8,12 @@ import { noteTree, type NoteNode } from "@/lib/notes-data";
 function NoteTreeItem({
   node,
   parentSlugs,
+  pathname,
 }: {
   node: NoteNode;
   parentSlugs: string[];
+  pathname: string;
 }) {
-  const pathname = usePathname();
   const slugs = [...parentSlugs, node.slug];
   const href = `/notes/${slugs.join("/")}`;
   const active = pathname === href;
@@ -39,7 +40,12 @@ function NoteTreeItem({
       {node.children && node.children.length > 0 && (
         <ul className="ml-3 space-y-0.5 border-l border-line">
           {node.children.map((child) => (
-            <NoteTreeItem key={child.slug} node={child} parentSlugs={slugs} />
+            <NoteTreeItem
+              key={child.slug}
+              node={child}
+              parentSlugs={slugs}
+              pathname={pathname}
+            />
           ))}
         </ul>
       )}
@@ -48,6 +54,8 @@ function NoteTreeItem({
 }
 
 export function NotesSidebar() {
+  const pathname = usePathname();
+
   return (
     <nav className="text-sm">
       <ul className="space-y-6">
@@ -63,6 +71,7 @@ export function NotesSidebar() {
                     key={child.slug}
                     node={child}
                     parentSlugs={[section.slug]}
+                    pathname={pathname}
                   />
                 ))}
               </ul>

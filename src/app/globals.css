@@ -73,6 +73,15 @@ body {
   margin-top: 1.35em;
 }
 
+.prose-article h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.65em;
+  letter-spacing: -0.01em;
+  margin-top: 2.6em;
+  color: var(--color-ink);
+}
+
 .prose-article h2 {
   font-family: var(--font-display);
   font-weight: 600;

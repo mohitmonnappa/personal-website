@@ -11,6 +11,13 @@ pentesting methodology notes. Replaces an old Hugo + PaperMod blog (the
 original markdown content is preserved under `content/` and reused as the
 data source for several sections).
 
+Licensing is deliberately split (see `LICENSE.md`): everything defaults to
+all-rights-reserved, with one carve-out — the `/notes` content
+(`src/lib/notes-data.ts`) is CC BY 4.0 so others can reuse the pentesting
+notes with attribution. The notes are the *only* thing licensed for reuse;
+don't extend the carve-out to writeups or code, and don't add a permissive
+code license (MIT etc.) — the owner explicitly wants the rest reserved.
+
 Design direction is deliberate and has been explicitly redirected once
 already: **light, warm, editorial** (paper/pine/clay palette, Space Grotesk +
 Source Serif 4) — not a dark "hacker terminal" aesthetic, even though the
@@ -93,11 +100,15 @@ which one a given section uses:
      `children` (e.g. "Windows File Transfer"). Only nodes with a non-empty
      `body` are routable (`findNote`/`allNoteParams` filter on this); a node
      with children but no body of its own (a pure category, e.g.
-     "Exploitation") is sidebar/index-only — don't assume every tree node
-     has a page. `NotesSidebar.tsx` and `notes/page.tsx` each walk the
-     recursive tree themselves (rendering a plain label for no-body nodes,
-     a link for nodes with a body) rather than sharing one component, since
-     their styling differs enough that extracting one didn't pay for itself.
+     "Exploitation") is sidebar-only — don't assume every tree node
+     has a page. `NotesSidebar.tsx` walks the recursive tree (rendering a
+     plain label for no-body nodes, a link for nodes with a body).
+     `notes/page.tsx` used to render a second tree-walking outline, but is
+     now a static intro page (personal intro + a "Caution" disclaimer
+     callout, per explicit request — modeled on BRM's Field Manual landing
+     page but restyled to this site's clay/paper palette); the sidebar is
+     the only navigation over the tree. Don't reintroduce a table of
+     contents there.
 
    The `Gaming Server/` and `PenTesting notes .ctb` raw sources are
    intentionally excluded from git via `.gitignore` — they're personal raw

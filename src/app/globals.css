@@ -8,6 +8,7 @@
   --color-pine-deep: #163329;
   --color-pine-tint: #e4e9e2;
   --color-clay: #b5602f;
+  --color-clay-deep: #7a3418;
   --color-clay-tint: #f3e3d6;
   --color-stone: #6e7268;
   --color-line: #ddd8c8;
@@ -21,6 +22,7 @@
   --color-pine-deep: var(--color-pine-deep);
   --color-pine-tint: var(--color-pine-tint);
   --color-clay: var(--color-clay);
+  --color-clay-deep: var(--color-clay-deep);
   --color-clay-tint: var(--color-clay-tint);
   --color-stone: var(--color-stone);
   --color-line: var(--color-line);

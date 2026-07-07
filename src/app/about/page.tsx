@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, Mail } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Container } from "@/components/Container";
 import { PageHeader } from "@/components/PageHeader";
 import { Eyebrow } from "@/components/Eyebrow";
-import { Button } from "@/components/Button";
 import {
   GithubGlyph,
   HackTheBoxGlyph,
@@ -57,12 +56,6 @@ export default function AboutPage() {
         </p>
       </div>
 
-      <div className="mt-6">
-        <Button href="mailto:monnappamohit@gmail.com" external variant="secondary">
-          <Mail size={15} /> Email me
-        </Button>
-      </div>
-
       <div className="mt-20">
         <Eyebrow>Credentials</Eyebrow>
         <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink">
@@ -97,7 +90,7 @@ export default function AboutPage() {
       </div>
 
       <div className="mt-16 mb-20">
-        <Eyebrow>Elsewhere</Eyebrow>
+        <Eyebrow>Socials</Eyebrow>
         <div className="mt-5 flex flex-wrap gap-3">
           {SOCIALS.map((s) => (
             <Link

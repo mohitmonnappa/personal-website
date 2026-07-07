@@ -18,38 +18,6 @@ export default function Home() {
       <TraceDivider />
 
       <Container wide>
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <Eyebrow>Selected work</Eyebrow>
-            <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-              Projects
-            </h2>
-          </div>
-          <Link
-            href="/projects"
-            className="hidden items-center gap-1 text-sm font-medium text-stone transition-colors hover:text-pine sm:flex"
-          >
-            All projects <ArrowUpRight size={15} />
-          </Link>
-        </div>
-
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <ProjectCard key={project.slug} project={project} />
-          ))}
-        </div>
-
-        <Link
-          href="/projects"
-          className="mt-6 flex items-center gap-1 text-sm font-medium text-stone transition-colors hover:text-pine sm:hidden"
-        >
-          All projects <ArrowUpRight size={15} />
-        </Link>
-      </Container>
-
-      <TraceDivider />
-
-      <Container wide>
         <Eyebrow>Field notes</Eyebrow>
         <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
           Writeups &amp; methodology
@@ -94,6 +62,38 @@ export default function Home() {
             </p>
           </Link>
         </div>
+      </Container>
+
+      <TraceDivider />
+
+      <Container wide>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <Eyebrow>Selected work</Eyebrow>
+            <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+              Projects
+            </h2>
+          </div>
+          <Link
+            href="/projects"
+            className="hidden items-center gap-1 text-sm font-medium text-stone transition-colors hover:text-pine sm:flex"
+          >
+            All projects <ArrowUpRight size={15} />
+          </Link>
+        </div>
+
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => (
+            <ProjectCard key={project.slug} project={project} />
+          ))}
+        </div>
+
+        <Link
+          href="/projects"
+          className="mt-6 flex items-center gap-1 text-sm font-medium text-stone transition-colors hover:text-pine sm:hidden"
+        >
+          All projects <ArrowUpRight size={15} />
+        </Link>
       </Container>
 
       <Container wide className="mt-24 mb-8">

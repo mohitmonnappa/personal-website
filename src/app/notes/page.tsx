@@ -12,14 +12,14 @@ export default function NotesIndexPage() {
         Notes
       </h1>
       <p className="mt-2 text-lg font-medium text-clay">
-        A pentest field manual — phase by phase, tool by tool.
+        A pentest field manual - phase by phase, tool by tool.
       </p>
 
       <div className="mt-6 max-w-2xl space-y-5 text-lg leading-relaxed text-stone">
         <p>
           These are my personal pentesting notes, written and collected over
           time. They&apos;re designed to be easy to access and to roughly
-          follow the order of a pentest — pick a phase from the sidebar and
+          follow the order of a pentest - pick a phase from the sidebar and
           work through it.
         </p>
         <p>
@@ -28,7 +28,7 @@ export default function NotesIndexPage() {
           refining and expanding them over time.
         </p>
         <p>Hope you find some value in them.</p>
-        <p className="text-ink">— Mohit</p>
+        <p className="text-ink">- Mohit</p>
       </div>
 
       <h2 className="mt-14 font-display text-xl font-semibold tracking-tight text-ink">

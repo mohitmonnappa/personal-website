@@ -701,7 +701,7 @@ The **COLUMNS** table in the **INFORMATION_SCHEMA** Database contains informatio
 
 • First, find out no. columns and the datatype of it.  
 • Then find out the name of the table and columns.  
-**If 4 columns** are present and **you can ** retrieve data **from 2** columns, **then put null for the other columns**  
+**If 4 columns** are present and **you can** retrieve data **from 2** columns, **then put null for the other columns**  
 Eg: <span class="cmd">' UNION SELECT NULL, username, password, NULL FROM users--</span>
 
 ## Retrieving multiple values in single column

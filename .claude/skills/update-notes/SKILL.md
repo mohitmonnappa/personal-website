@@ -57,12 +57,15 @@ another location.
      changes) plus possibly some cosmetic heading-line differences in nodes
      that weren't touched (see "Known limitations" below) — not wholesale
      reformatting of untouched nodes.
-   - Confirm the trailing `FoundNote` type + `findNote`/`allNoteParams`
-     functions are still present at the end of the file (the converter only
-     regenerates the `noteTree` tree + its header comment; it appends this
-     trailing block verbatim from `notes_trailing_block.txt`, but always
-     re-verify since `src/app/notes/[...slug]/page.tsx` imports both
-     functions and the build will fail without them).
+   - Confirm the trailing `FoundNote` type, `findNote`/`allNoteParams`
+     functions, and the `NoteSearchEntry` type + `noteSearchEntries` function
+     (backing the `/notes` command palette's search index) are all still
+     present at the end of the file (the converter only regenerates the
+     `noteTree` tree + its header comment; it appends this trailing block
+     verbatim from `notes_trailing_block.txt`, but always re-verify since
+     `src/app/notes/[...slug]/page.tsx` imports `findNote`/`allNoteParams` and
+     `src/components/CommandPalette.tsx` imports `noteSearchEntries` — the
+     build will fail without any of them).
    - `npm run build` — must succeed and generate all `/notes/[...slug]`
      routes. This is the real correctness gate.
 4. Commit locally only (per standing instruction: never push, no
@@ -120,7 +123,8 @@ CherryTree stores each node's rich text as XML: `<node>` containing
   newline pass doesn't double up spacing inside it.
 - **Header comment + trailing block**: the top-of-file comment (mapping
   rules for future readers) and the bottom-of-file `FoundNode`/`findNote`/
-  `allNoteParams` exports are not derived from the notebook — the script
+  `allNoteParams`/`NoteSearchEntry`/`noteSearchEntries` exports are not
+  derived from the notebook — the script
   reads them from `notes_header_comment.txt` / `notes_trailing_block.txt`
   next to itself and splices them in verbatim. If `notes-data.ts`'s header
   comment or trailing helpers are ever intentionally edited, update those

@@ -111,7 +111,21 @@ which one a given section uses:
      with children but no body of its own (a pure category, e.g.
      "Exploitation") is sidebar-only — don't assume every tree node
      has a page. `NotesSidebar.tsx` walks the recursive tree (rendering a
-     plain label for no-body nodes, a link for nodes with a body).
+     plain label for no-body nodes, a link for nodes with a body), and
+     colors nodes by structural tier, not content: `text-ink` for the
+     top-level section label, `text-clay` for 2nd-level groups that have
+     children (e.g. "Enumeration"), `text-clay-deep` for 3rd-level nested
+     groups (e.g. "Tools" under "Enumeration"), and `text-stone` for
+     everything else — leaves at any depth, and any grouping node nested
+     past the 3rd level (e.g. "SQL Injection", which has a "SQLMap" child
+     but sits one level too deep for the accent). The active page is always
+     bold `text-pine` with a `border-pine` rail, overriding the tier color —
+     `pine` is reserved for interactive/active state, so don't reach for it
+     as a third tier color if this scheme ever needs to grow (fuller
+     rationale in `.claude/skills/update-notes/SKILL.md`). Each note page's
+     own "In this section" child-list block (`notes/[...slug]/page.tsx`)
+     uses the same `text-clay` heading and renders above the node's body
+     content, not below it.
      `notes/page.tsx` used to render a second tree-walking outline, but is
      now a static intro page (personal intro + a "Caution" disclaimer
      callout, per explicit request — modeled on BRM's Field Manual landing
@@ -194,7 +208,8 @@ dynamic routes all use `generateStaticParams` for full static generation:
 
 Tokens live as CSS custom properties in `src/app/globals.css` (`:root` +
 Tailwind v4 `@theme inline` block) — colors (`paper`, `paper-raised`, `ink`,
-`pine`, `pine-deep`, `pine-tint`, `clay`, `clay-tint`, `stone`, `line`) and
+`pine`, `pine-deep`, `pine-tint`, `clay`, `clay-deep`, `clay-tint`, `stone`,
+`line`) and
 font variables (`--font-display` = Space Grotesk, `--font-body` = Source
 Serif 4, `--font-mono` = IBM Plex Mono, all loaded via `next/font/google` in
 `layout.tsx`). Use the Tailwind utilities these generate (`bg-paper`,

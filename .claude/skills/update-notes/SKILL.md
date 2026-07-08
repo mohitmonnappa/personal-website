@@ -38,7 +38,10 @@ they move around themselves, not a stable project asset.
    stops the personal notebook from being ignored.
 1. **Isolate first** (`EnterWorktree`) if not already isolated — this
    modifies a tracked source file (`src/lib/notes-data.ts`) and asset files
-   under `public/notes/`.
+   under `public/notes/`. Pass an explicit `name` describing the change,
+   e.g. `notes-update` (or `notes-update-2`, `-3`, ... if a prior worktree
+   with that name already exists) — never let it default to a random
+   generated name.
 2. Run the converter:
    ```
    python .claude/skills/update-notes/convert_notes.py "<path-to-ctb>" "<repo-root-or-worktree-root>"

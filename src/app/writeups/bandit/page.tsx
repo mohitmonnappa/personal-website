@@ -34,7 +34,7 @@ export default function BanditIndexPage() {
               className="group flex items-center justify-between gap-4 py-4"
             >
               <span className="flex items-baseline gap-4">
-                <span className="font-mono text-sm text-stone">
+                <span className="font-mono text-sm text-clay">
                   {String(lvl.level).padStart(2, "0")}
                 </span>
                 <span>

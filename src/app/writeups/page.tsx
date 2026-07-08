@@ -31,7 +31,7 @@ function CollectionCard({
           {description}
         </p>
       </div>
-      <p className="mt-6 font-mono text-xs text-stone">{count}</p>
+      <p className="mt-6 font-mono text-xs text-clay">{count}</p>
     </Link>
   );
 }
@@ -46,7 +46,7 @@ export default function WriteupsPage() {
       <PageHeader
         eyebrow="Field notes"
         title="Writeups"
-        description="Challenges and machines I've worked through, written up as I go."
+        description="Challenges, CTFs and machines I've worked on throughout my journey."
       />
 
       <div className="mb-24 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

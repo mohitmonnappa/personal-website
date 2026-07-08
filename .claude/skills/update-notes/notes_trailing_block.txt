@@ -1,0 +1,35 @@
+export type FoundNote = {
+  node: NoteNode;
+  path: NoteNode[];
+};
+
+export function findNote(slugPath: string[]): FoundNote | undefined {
+  let level = noteTree;
+  const path: NoteNode[] = [];
+
+  for (const slug of slugPath) {
+    const match = level.find((n) => n.slug === slug);
+    if (!match) return undefined;
+    path.push(match);
+    level = match.children ?? [];
+  }
+
+  const node = path[path.length - 1];
+  if (!node?.body) return undefined;
+  return { node, path };
+}
+
+export function allNoteParams(): { slug: string[] }[] {
+  const params: { slug: string[] }[] = [];
+
+  function walk(nodes: NoteNode[], prefix: string[]) {
+    for (const n of nodes) {
+      const path = [...prefix, n.slug];
+      if (n.body) params.push({ slug: path });
+      if (n.children) walk(n.children, path);
+    }
+  }
+
+  walk(noteTree, []);
+  return params;
+}

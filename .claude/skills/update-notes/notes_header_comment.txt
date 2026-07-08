@@ -1,0 +1,29 @@
+// Real pentesting methodology notes, converted from the CherryTree
+// notebook "PenTesting notes .ctb" (SQLite-based; node/children/grid/image
+// tables). Converted with a one-off Python script (not checked in) that
+// walked the node tree, spliced embedded tables/images back into the
+// right position in each node's rich text via CherryTree's buffer-offset
+// scheme, and mapped rich-text run formatting to markdown (scale h1-h4 ->
+// headings, weight=heavy -> bold, style=italic -> italic, family=monospace
+// -> inline code, link -> markdown links, one internal "node N" link ->
+// resolved to its site path). One color was semantic rather than
+// decorative: `#4cdd40` (light green) was the author's own convention for
+// "this is a command", used 585 times across the notebook - those runs
+// are wrapped in `<span class="cmd">` (styled `var(--color-clay)` in
+// globals.css, since actual green was ruled out as visually redundant
+// with the pine/link color) instead of being fenced as code, so they stay
+// inline with the surrounding prose exactly as authored. All other
+// foreground/background colors and justification were dropped as
+// presentational-only (too sparse/inconsistent to mean anything).
+// Single newlines
+// within a run of text were turned into markdown hard breaks (trailing
+// two spaces) so the author's original line-by-line layout still renders
+// as line breaks, since remark's default softbreak collapses to a space.
+// No wording was changed, including typos in the source.
+//
+// The tree is *not* a fixed two-level section/note shape - CherryTree
+// nodes nest arbitrarily deep, and a "category" node can carry its own
+// body text in addition to children (e.g. "Windows File Transfer"). Only
+// nodes with a non-empty `body` are routable pages; nodes without one
+// (pure category folders, or a handful of never-written-up leaf topics
+// like "SNMP") are sidebar/index labels only.

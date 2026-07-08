@@ -86,15 +86,24 @@ which one a given section uses:
      hardcoding a new route.
    - `src/lib/notes-data.ts` — pentesting methodology reference, and now the
      **real** content: converted from the gitignored CherryTree notebook
-     `PenTesting notes .ctb` (a SQLite database — `node`/`children` tables
+     `PenTesting notes.ctb` (a SQLite database — `node`/`children` tables
      for the tree, `grid`/`image` tables for embedded tables/screenshots
      spliced back in by character offset, rich-text run attributes mapped to
-     markdown). The conversion script itself isn't checked in (one-off, not
-     part of the build); see the comment at the top of `notes-data.ts` for
-     exactly what it did and what it deliberately dropped (colors,
-     justification) or normalized (single newlines → markdown hard breaks
-     so the original line-by-line layout still renders, since remark's
-     default softbreak collapses to a space). **`NoteNode` is a genuine
+     markdown). To regenerate this file after the notebook changes, use the
+     `update-notes` skill (`.claude/skills/update-notes/SKILL.md` +
+     `convert_notes.py`) rather than re-deriving the conversion — it encodes
+     the offset-splicing rules, the CherryTree `#4cdd40` "this is a command"
+     convention, and where the notebook is likely to be found (repo root or
+     `~/Downloads`, since the user moves it around manually). See the
+     comment at the top of `notes-data.ts` for what the conversion
+     deliberately dropped (colors, justification) or normalized (single
+     newlines → markdown hard breaks so the original line-by-line layout
+     still renders, since remark's default softbreak collapses to a space).
+     Regenerated output isn't guaranteed byte-identical on nodes the
+     notebook edit didn't touch — some older formatting was hand-tweaked
+     before this skill existed — so a diff that's pure reformatting (no
+     wording change) on an untouched node is expected, not a bug.
+     **`NoteNode` is a genuine
      recursive tree, not a fixed two-level shape** — CherryTree nodes nest
      arbitrarily deep, and a node can carry both its own `body` *and*
      `children` (e.g. "Windows File Transfer"). Only nodes with a non-empty
@@ -110,7 +119,7 @@ which one a given section uses:
      the only navigation over the tree. Don't reintroduce a table of
      contents there.
 
-   The `Gaming Server/` and `PenTesting notes .ctb` raw sources are
+   The `Gaming Server/` and `PenTesting notes.ctb` raw sources are
    intentionally excluded from git via `.gitignore` — they're personal raw
    notes, not site content. `machines-data.ts`'s `"ledger"` entry is the
    only remaining placeholder in either file; if you convert it later,

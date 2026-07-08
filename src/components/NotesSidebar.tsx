@@ -9,14 +9,17 @@ function NoteTreeItem({
   node,
   parentSlugs,
   pathname,
+  depth,
 }: {
   node: NoteNode;
   parentSlugs: string[];
   pathname: string;
+  depth: number;
 }) {
   const slugs = [...parentSlugs, node.slug];
   const href = `/notes/${slugs.join("/")}`;
   const active = pathname === href;
+  const hasChildren = !!node.children && node.children.length > 0;
 
   return (
     <li>
@@ -27,13 +30,26 @@ function NoteTreeItem({
             "-ml-px block border-l py-1.5 pl-4 transition-colors",
             active
               ? "border-pine font-medium text-pine"
-              : "border-transparent text-stone hover:border-line hover:text-ink"
+              : hasChildren && depth === 0
+                ? "border-transparent text-clay hover:border-line hover:text-ink"
+                : hasChildren && depth === 1
+                  ? "border-transparent text-clay-deep hover:border-line hover:text-ink"
+                  : "border-transparent text-stone hover:border-line hover:text-ink"
           )}
         >
           {node.title}
         </Link>
       ) : (
-        <span className="-ml-px block border-l border-transparent py-1.5 pl-4 text-stone/70">
+        <span
+          className={clsx(
+            "-ml-px block border-l border-transparent py-1.5 pl-4",
+            hasChildren && depth === 0
+              ? "text-clay/70"
+              : hasChildren && depth === 1
+                ? "text-clay-deep/70"
+                : "text-stone/70"
+          )}
+        >
           {node.title}
         </span>
       )}
@@ -45,6 +61,7 @@ function NoteTreeItem({
               node={child}
               parentSlugs={slugs}
               pathname={pathname}
+              depth={depth + 1}
             />
           ))}
         </ul>
@@ -61,7 +78,7 @@ export function NotesSidebar() {
       <ul className="space-y-6">
         {noteTree.map((section) => (
           <li key={section.slug}>
-            <p className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-stone">
+            <p className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-ink">
               {section.title}
             </p>
             {section.children && section.children.length > 0 && (
@@ -72,6 +89,7 @@ export function NotesSidebar() {
                     node={child}
                     parentSlugs={[section.slug]}
                     pathname={pathname}
+                    depth={0}
                   />
                 ))}
               </ul>

@@ -127,6 +127,40 @@ CherryTree stores each node's rich text as XML: `<node>` containing
   two `.txt` files to match, or the next regeneration will silently revert
   them.
 
+## Sidebar & "In this section" accent colors (structural, not converter output)
+
+`NotesSidebar.tsx` and `src/app/notes/[...slug]/page.tsx` color-code the tree
+purely from its *shape* — no field the converter writes controls this, so
+regenerating `notes-data.ts` never needs a matching color edit:
+
+- Top-level section label (`noteTree`'s own entries, e.g. "Pentest Notes",
+  "Fundamentals") — `text-ink`, rendered as a plain `<p>`, not a link.
+- A node that is a direct child of a section and itself has children — the
+  tree's 2nd level (e.g. "Enumeration", "Exploitation", "Services") —
+  `text-clay`.
+- A node one level deeper that still has children — the tree's 3rd level
+  (e.g. "Tools" under "Enumeration", "Web Exploitation" under
+  "Exploitation", "Password Cracking") — `text-clay-deep` (a muted, darker
+  shade of the same clay family — deliberately not pine, which the site
+  reserves for active/hover/interactive state).
+- Everything else — leaves at any depth, *and* grouping nodes with children
+  at the 4th level or deeper (e.g. "SQL Injection", which has a "SQLMap"
+  child but sits one level past the colored tiers) — plain `text-stone`.
+  Only the 2nd and 3rd tiers get the orange accent; it's deliberately not
+  extended further down even when a deeper node also groups children.
+- The current page's own link — bold `text-pine` with a `border-pine` left
+  rail, overriding whichever of the above it would otherwise get.
+
+This is computed in `NoteTreeItem` from `hasChildren` + recursion `depth`
+(depth `0` = clay, depth `1` = clay-deep, depth `2+` = stone regardless of
+`hasChildren`), not hardcoded per node title — adding, removing, or
+re-nesting nodes via the converter reshapes the colors automatically.
+
+The "In this section" block on `notes/[...slug]/page.tsx` (rendered only
+when the current node has routable children) uses `text-clay` for its
+heading and is positioned above the node's own body content, not below it —
+don't move it back below when touching that page.
+
 ## Known limitations
 
 - **Not guaranteed byte-identical on untouched nodes.** The committed

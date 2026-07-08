@@ -40,13 +40,9 @@ export default async function NotePage({
       <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
         {found.node.title}
       </h1>
-      <div className="mt-8">
-        <Prose source={found.node.body!} />
-      </div>
-
       {children.length > 0 && (
-        <div className="mt-12 border-t border-line pt-8">
-          <p className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-stone">
+        <div className="mt-8 border-b border-line pb-8">
+          <p className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-clay">
             In this section
           </p>
           <ul className="mt-4 divide-y divide-line border-y border-line">
@@ -63,6 +59,10 @@ export default async function NotePage({
           </ul>
         </div>
       )}
+
+      <div className="mt-8">
+        <Prose source={found.node.body!} />
+      </div>
     </div>
   );
 }

@@ -44,15 +44,12 @@ export default function AboutPage() {
 
       <div className="max-w-xl space-y-5 text-lg leading-relaxed text-ink">
         <p>
-          I&rsquo;m a final-year Information Science student, and I started
-          writing here to document my path into cybersecurity &mdash; what
-          I&rsquo;m learning, what I&rsquo;m building, and the machines and
-          challenges I work through along the way.
+          I started this blog in June 2026 to share my journey into
+          cybersecurity and what I&rsquo;ve been up to recently.
         </p>
-        <p className="text-stone">
-          Outside of coursework, most of my time goes into CTFs and practical
-          security tooling: LLM firewalls, agent frameworks, and small
-          systems that are more interesting to take apart than to use.
+        <p>
+          I&rsquo;m a final-year Information Science student, graduating
+          soon.
         </p>
       </div>
 

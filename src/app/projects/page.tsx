@@ -14,7 +14,7 @@ export default function ProjectsPage() {
       <PageHeader
         eyebrow="Selected work"
         title="Projects"
-        description="Tools I've built to learn how systems work, mostly at the intersection of security and AI."
+        description="Stuff I've built to figure out how things actually work - mostly security and AI."
       />
 
       <div className="mb-20 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

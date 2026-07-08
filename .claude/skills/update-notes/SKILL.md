@@ -12,14 +12,14 @@ from the current state of the notebook.
 
 ## When to invoke
 
-Any "update my notes" / "sync my notes with the notebook" request. Find the
-`.ctb` file first — check, in order:
-1. A path the user just gave you in this conversation.
-2. The repo root: `PenTesting notes.ctb` (gitignored, see `.gitignore`).
-3. `~/Downloads/PenTesting notes.ctb`.
+Any "update my notes" / "sync my notes with the notebook" request. The
+notebook lives at the repo root — `PenTesting notes.ctb` (gitignored, see
+`.gitignore`) — that's its permanent location now, not a path that moves
+around. Use that unless the user gives you a different path in the
+conversation.
 
-If none exist, ask the user where the notebook is — it's a personal file
-they move around themselves, not a stable project asset.
+If it's not at the repo root, ask the user where it is rather than guessing
+another location.
 
 ## What this does
 

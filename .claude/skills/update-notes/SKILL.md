@@ -23,6 +23,19 @@ they move around themselves, not a stable project asset.
 
 ## What this does
 
+0. **Check the target checkout's git status first**, in whatever repo copy
+   you'll actually run the converter against. If it has uncommitted changes
+   to `src/lib/notes-data.ts` and/or `.gitignore`, don't just overwrite them —
+   `git stash push -u -m "<unique tag>"` first (see the repo's stash-safety
+   rule if one exists), regenerate, then diff the stash against the
+   regenerated file before deciding whether anything in it is worth keeping.
+   In practice these stray edits have turned out to be stale/partial drafts
+   of the same sync (not new content), but verify per-case rather than
+   assuming — it's the user's notes content, don't discard on your own
+   judgment call. Also verify `.gitignore`'s pattern for the notebook
+   actually matches its real filename (`git check-ignore -v "<filename>"` —
+   should print a match); a filename drift here (e.g. a stray space) silently
+   stops the personal notebook from being ignored.
 1. **Isolate first** (`EnterWorktree`) if not already isolated — this
    modifies a tracked source file (`src/lib/notes-data.ts`) and asset files
    under `public/notes/`.

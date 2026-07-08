@@ -163,7 +163,7 @@ export function CommandPalette() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
           placeholder="Search notes"
-          className="w-full bg-transparent text-ink outline-none placeholder:text-stone"
+          className="w-full bg-transparent text-ink outline-none focus:outline-none focus-visible:outline-none placeholder:text-stone"
         />
         {query ? (
           <button

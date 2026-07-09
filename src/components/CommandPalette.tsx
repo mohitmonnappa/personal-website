@@ -44,6 +44,9 @@ export function CommandPalette() {
   const router = useRouter();
   const [focused, setFocused] = useState(false);
   const [query, setQuery] = useState("");
+  // Defaults to false (Ctrl) so server render and first client render agree —
+  // Mac users get the ⌘ glyph swapped in after mount, no hydration mismatch.
+  const [isMac, setIsMac] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [prevQuery, setPrevQuery] = useState(query);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -98,6 +101,10 @@ export function CommandPalette() {
     setQuery("");
     inputRef.current?.focus();
   }
+
+  useEffect(() => {
+    setIsMac(/Mac|iPhone|iPad|iPod/.test(navigator.platform));
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -176,7 +183,7 @@ export function CommandPalette() {
           </button>
         ) : (
           <kbd className="shrink-0 inline-flex items-center gap-1 rounded border border-line bg-paper px-1.5 py-0.5 font-mono text-[10px] font-medium text-stone">
-            <Command className="h-3 w-3" />K
+            {isMac ? <Command className="h-3 w-3" /> : <span>Ctrl</span>}K
           </kbd>
         )}
       </div>

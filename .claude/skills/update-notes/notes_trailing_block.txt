@@ -33,3 +33,53 @@ export function allNoteParams(): { slug: string[] }[] {
   walk(noteTree, []);
   return params;
 }
+
+export type NoteSearchEntry = {
+  title: string;
+  url: string;
+  breadcrumb: string;
+  text: string;
+};
+
+// Reduces a note body to plain text for the command-palette search index:
+// keeps the actual command text out of `<span class="cmd">...</span>` (the
+// author's "this is a command" convention, see the file header) instead of
+// stripping it, drops markdown syntax that would otherwise pollute matches
+// (headings, bold/italic markers, inline code backticks, table pipes, hard
+// break trailing spaces), and collapses whitespace.
+function bodyToSearchText(body: string): string {
+  return body
+    .replace(/<span class="cmd">([\s\S]*?)<\/span>/g, "$1")
+    .replace(/<\/?[^>]+>/g, " ")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\|/g, " ")
+    .replace(/ {2,}\n/g, "\n")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function noteSearchEntries(): NoteSearchEntry[] {
+  const entries: NoteSearchEntry[] = [];
+
+  function walk(nodes: NoteNode[], prefix: string[], titles: string[]) {
+    for (const n of nodes) {
+      const path = [...prefix, n.slug];
+      const breadcrumbTitles = [...titles, n.title];
+      if (n.body) {
+        entries.push({
+          title: n.title,
+          url: `/notes/${path.join("/")}`,
+          breadcrumb: titles.join(" / "),
+          text: bodyToSearchText(n.body),
+        });
+      }
+      if (n.children) walk(n.children, path, breadcrumbTitles);
+    }
+  }
+
+  walk(noteTree, [], []);
+  return entries;
+}

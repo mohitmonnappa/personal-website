@@ -204,6 +204,23 @@ dynamic routes all use `generateStaticParams` for full static generation:
   "note" level the way it used to — `findNote` walks the tree per segment
   and only resolves if the matched node has a `body`
 
+## Notes search (command palette)
+
+`CommandPalette.tsx` is a Cmd/Ctrl+K search box scoped to `/notes` only
+(mounted once in `notes/layout.tsx`, right-aligned above the content
+column) — it's client-side search over the notes tree, not a site-wide
+command palette with actions. `noteSearchEntries()` in `notes-data.ts`
+walks the same body-gated `noteTree` used by `findNote`/`allNoteParams` and
+flattens each routable note into a flat `{title, url, breadcrumb, text}`
+entry, reducing the markdown body to plain search text (unwrapping rather
+than stripping the `<span class="cmd">` command spans, since those are the
+highest-value search tokens, and dropping markdown syntax that would
+pollute matches). Because this index is derived from `noteTree`,
+regenerating `notes-data.ts` via the `update-notes` skill keeps search
+current automatically — no separate index to maintain. Matching is a plain
+client-side substring search; title matches rank above body matches
+(which render a highlighted snippet), capped at 9 results.
+
 ## Design system
 
 Tokens live as CSS custom properties in `src/app/globals.css` (`:root` +
@@ -236,8 +253,8 @@ color), and the draw-in/erase cycle loops on a 4s interval for as long as
 the home page is mounted rather than playing once on scroll-into-view.
 
 If asked to integrate a pasted UI snippet or component demo (21st.dev-style
-prompts, shadcn `/ui` components, etc.), check `TODO.md`'s "Saved component
-prompts" log first — several dark-theme/shadcn/GSAP-based demos were already
+prompts, shadcn `/ui` components, etc.), check `COMPONENT-PROMPTS.md` (gitignored
+working notes) first — several dark-theme/shadcn/GSAP-based demos were already
 evaluated there and rejected in favor of custom rebuilds using this site's
 own tokens and Framer Motion (see `Nav.tsx`, `TraceDivider.tsx`). Don't
 re-introduce `next-themes`, shadcn design tokens, GSAP, or

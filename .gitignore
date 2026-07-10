@@ -5,6 +5,9 @@
 # Working notes - not for version control
 /COMPONENT-PROMPTS.md
 
+# git worktrees - not for version control
+/.claude/worktrees/
+
 # dependencies
 /node_modules
 /.pnp

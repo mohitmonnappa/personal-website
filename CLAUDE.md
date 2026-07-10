@@ -43,6 +43,17 @@ When verifying UI changes visually, Playwright is not a project dependency —
 install it ad hoc with `npm install --no-save playwright` (chromium via
 `npx playwright install chromium`) rather than adding it to `package.json`.
 
+## Git workflow
+
+Any change to content that ends up rendered on the live site — `content/*.md`,
+`src/lib/notes-data.ts` (including notes synced via the `update-notes`
+skill), `machines-data.ts`, project copy, etc. — and any cosmetic/functional
+feature work, goes on its own branch (`EnterWorktree`, named after the
+change, e.g. `notes-update-1`). Commit there and leave it on that branch for
+review; don't merge or fast-forward it into `main` yourself. The one
+exception is routine edits to this file or to files under `.claude/skills/`,
+which go straight to `main` per the global rule in `~/.claude/CLAUDE.md`.
+
 ## Content architecture
 
 There are two different content sources feeding the site, and it matters

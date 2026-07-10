@@ -13,13 +13,10 @@ from the current state of the notebook.
 ## When to invoke
 
 Any "update my notes" / "sync my notes with the notebook" request. The
-notebook lives at the repo root — `PenTesting notes.ctb` (gitignored, see
-`.gitignore`) — that's its permanent location now, not a path that moves
-around. Use that unless the user gives you a different path in the
-conversation.
-
-If it's not at the repo root, ask the user where it is rather than guessing
-another location.
+notebook always lives at the repo root — `PenTesting notes.ctb` (gitignored,
+see `.gitignore`). This is a fixed location, not a path that moves around —
+use it directly without asking or checking elsewhere, unless the user
+explicitly gives a different path in the conversation.
 
 ## What this does
 
@@ -38,10 +35,12 @@ another location.
    stops the personal notebook from being ignored.
 1. **Isolate first** (`EnterWorktree`) if not already isolated — this
    modifies a tracked source file (`src/lib/notes-data.ts`) and asset files
-   under `public/notes/`. Pass an explicit `name` describing the change,
-   e.g. `notes-update` (or `notes-update-2`, `-3`, ... if a prior worktree
-   with that name already exists) — never let it default to a random
-   generated name.
+   under `public/notes/`. Pass an explicit `name` of the form
+   `notes-update-<n>` — always the prefix `notes-update-` followed by a
+   number/iteration (`notes-update-1`, then `notes-update-2`, `-3`, ...
+   incrementing when a worktree with the current number already exists).
+   Never use a bare `notes-update` without a number, and never let it
+   default to a random generated name.
 2. Run the converter:
    ```
    python .claude/skills/update-notes/convert_notes.py "<path-to-ctb>" "<repo-root-or-worktree-root>"

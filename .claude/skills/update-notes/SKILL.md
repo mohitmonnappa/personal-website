@@ -40,7 +40,10 @@ explicitly gives a different path in the conversation.
    number/iteration (`notes-update-1`, then `notes-update-2`, `-3`, ...
    incrementing when a worktree with the current number already exists).
    Never use a bare `notes-update` without a number, and never let it
-   default to a random generated name.
+   default to a random generated name. This isolation is permanent, not a
+   staging step to fast-forward out of later: notes syncs are content
+   updates, and per standing instruction content/feature work always ends
+   up on its own branch rather than landing on `main` (see step 4).
 2. Run the converter:
    ```
    python .claude/skills/update-notes/convert_notes.py "<path-to-ctb>" "<repo-root-or-worktree-root>"
@@ -67,9 +70,16 @@ explicitly gives a different path in the conversation.
      build will fail without any of them).
    - `npm run build` — must succeed and generate all `/notes/[...slug]`
      routes. This is the real correctness gate.
-4. Commit locally only (per standing instruction: never push, no
-   `Co-Authored-By` trailer). Don't touch the `.ctb` file itself — it's
-   gitignored and not part of the commit.
+4. Commit locally on the worktree branch (per standing instruction: never
+   push, no `Co-Authored-By` trailer). Don't touch the `.ctb` file itself —
+   it's gitignored and not part of the commit. **Leave the commit on the
+   `notes-update-<n>` branch — do not merge or fast-forward it into
+   `main`.** This is a deliberate policy for content updates (notes syncs)
+   and cosmetic/functional feature work generally: they get their own
+   branch for the user to review and merge deliberately, unlike routine
+   CLAUDE.md/skill-file edits which do go straight to `main`. When exiting
+   the worktree, use `ExitWorktree` with `action: "keep"` so the branch and
+   its commit survive — never `"remove"`, which would discard the work.
 
 ## How the converter works (mapping rules)
 

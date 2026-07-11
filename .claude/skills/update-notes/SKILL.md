@@ -33,12 +33,29 @@ explicitly gives a different path in the conversation.
    actually matches its real filename (`git check-ignore -v "<filename>"` —
    should print a match); a filename drift here (e.g. a stray space) silently
    stops the personal notebook from being ignored.
-1. **Isolate first** (`EnterWorktree`) if not already isolated — this
-   modifies a tracked source file (`src/lib/notes-data.ts`) and asset files
-   under `public/notes/`. Pass an explicit `name` of the form
-   `notes-update-<n>` — always the prefix `notes-update-` followed by a
-   number/iteration (`notes-update-1`, then `notes-update-2`, `-3`, ...
-   incrementing when a worktree with the current number already exists).
+1. **Isolate** (`EnterWorktree`) if not already isolated — this modifies a
+   tracked source file (`src/lib/notes-data.ts`) and asset files under
+   `public/notes/`. First figure out which branch this sync belongs on:
+   list existing sync branches with `git branch --list 'notes-update-*'`.
+   - **None exist**: first sync ever. Use `EnterWorktree` with
+     `name: notes-update-1` (creates the branch fresh off `main`).
+   - **One or more exist**: take the highest-numbered one and check whether
+     it's already merged into `main` — `git merge-base --is-ancestor
+     notes-update-<n> main` (exit code 0 means merged).
+     - **Not merged yet** — the normal case, since the user reviews these
+       branches (often via a PR) before merging and that can take a while:
+       keep committing to that same branch instead of incrementing.
+       `EnterWorktree`'s `name` parameter always creates a brand-new
+       branch, so it can't be pointed at one that already exists — check it
+       out into a worktree directly instead: `git worktree add
+       .claude/worktrees/notes-update-<n> notes-update-<n>` (no `-b`, since
+       the branch already exists), then call `EnterWorktree` with
+       `path: .claude/worktrees/notes-update-<n>` to switch the session
+       into it. A branch can end up with several sync commits stacked on it
+       before the user finally merges it — that's expected, not something
+       to avoid or squash away.
+     - **Already merged** (or deleted post-merge): that review cycle is
+       done — start fresh with `EnterWorktree` `name: notes-update-<n+1>`.
    Never use a bare `notes-update` without a number, and never let it
    default to a random generated name. This isolation is permanent, not a
    staging step to fast-forward out of later: notes syncs are content

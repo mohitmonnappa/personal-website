@@ -80,6 +80,14 @@ class Converter:
     def style_run(self, text, attrs):
         if not text:
             return ""
+        # A literal "~" is GFM strikethrough syntax (remark-gfm's
+        # singleTilde default treats even a lone "~" as a delimiter), so
+        # escape it wherever it isn't already protected by a real code span.
+        # Skip runs headed for backtick/monospace wrapping below - inside a
+        # code span the backslash would show up literally instead of being
+        # consumed as an escape.
+        if attrs.get("family") != "monospace":
+            text = text.replace("~", "\\~")
         out = text
         link = attrs.get("link")
         if link:
@@ -106,7 +114,7 @@ class Converter:
         root = ET.fromstring(xml_txt)
         rows = []
         for row in root.findall("row"):
-            cells = [(cell.text or "").replace("\n", " ").strip() for cell in row.findall("cell")]
+            cells = [(cell.text or "").replace("\n", " ").strip().replace("~", "\\~") for cell in row.findall("cell")]
             rows.append(cells)
         if not rows:
             return ""

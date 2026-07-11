@@ -130,6 +130,23 @@ CherryTree stores each node's rich text as XML: `<node>` containing
   is protected from this pass via a placeholder substitution (it already
   contains its own correctly-formatted internal hard breaks) so the global
   newline pass doesn't double up spacing inside it.
+- **Literal `~` (tilde)**: escaped to `\~` in every run and every table
+  cell, *except* inside runs wrapped in backticks (`family="monospace"`).
+  remark-gfm treats even a lone `~` as strikethrough syntax (its
+  `singleTilde` option defaults on), so an unescaped tilde — most commonly
+  a home-directory shorthand in a command like `cd ~/tools` — would
+  silently turn the rest of the line into struck-through text. A real code
+  span (backtick-wrapped) is already literal as far as markdown parsing
+  goes, so escaping inside one would just inject a visible backslash into
+  copyable command text — that's why monospace runs are exempted. Because
+  the body is written into a TS template literal, and `escape_template`
+  doubles every backslash when it writes that literal, the single `\`
+  this step inserts becomes **two** backslashes (`\~`) in the actual
+  `notes-data.ts` source — that's expected, not a bug: it collapses back
+  to one backslash at runtime, which is the correct single-escape a
+  markdown parser expects. If you're ever hand-editing a tilde into
+  `notes-data.ts` directly (bypassing the converter), apply this same
+  doubling yourself outside of code spans.
 - **Header comment + trailing block**: the top-of-file comment (mapping
   rules for future readers) and the bottom-of-file `FoundNode`/`findNote`/
   `allNoteParams`/`NoteSearchEntry`/`noteSearchEntries` exports are not

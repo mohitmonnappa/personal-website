@@ -155,6 +155,29 @@ CherryTree stores each node's rich text as XML: `<node>` containing
   runs on the assembled body where heading/table blocks are placeholders at
   column 0, so those are untouched; the injected `&nbsp;` is added after
   per-run escaping (below), so it is not itself re-escaped.
+- **Literal backslash**: doubled (`\` → `\\` in the markdown source) in every
+  run and every table cell, *except* inside monospace/backtick runs — and
+  this runs *first*, before the HTML-entity and `~` escapes below. `style_run`
+  always appends structural markup (a closing `</span>`, link syntax, `**`,
+  backticks) directly after a run's text with no separator. CommonMark
+  treats `\` as an escape character for the following ASCII punctuation
+  character, so if the author's text itself ends in a backslash — extremely
+  common in this notebook's Windows paths, e.g. `C:\xampp\apache\logs\` — the
+  emitted source reads `...logs\</span>`, and the backslash silently escapes
+  the `<` of our own closing tag into inert literal text *before* raw-HTML
+  tag matching ever runs. The real `</span>` never registers as a tag: the
+  span never closes in the DOM, its `cmd` highlighting bleeds into
+  everything up to the next actual `</span>` downstream, and the swallowed
+  tag itself surfaces as literal `</span>` text on the page — this affected
+  already-published notes (Windows File Transfer, Windows Privilege
+  Escalation) even before the HTML-entity fix below existed, so it's a
+  separate bug, not a side effect of it. Doubling must run *before* the `~`
+  escape inserts its own intentional backslash, or that fresh backslash
+  would get doubled too and un-escape the tilde again. This composes with
+  the doubling `escape_template` already does at TS-emission time exactly
+  like the `~` escape does (see below): one author backslash → 2 chars here
+  → 4 chars in the `.ts` source → JS runtime collapses to 2 → markdown
+  collapses to 1 literal backslash rendered.
 - **HTML entities (`<`, `>`, `&`)**: escaped to `&lt;`/`&gt;`/`&amp;` in
   every run and every table cell, *except* inside monospace/backtick runs
   (same exemption as `~`). Command runs are emitted as raw

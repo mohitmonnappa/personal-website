@@ -80,6 +80,26 @@ class Converter:
     def style_run(self, text, attrs):
         if not text:
             return ""
+        # `style_run` always appends structural markup (a closing `</span>`,
+        # link syntax, `**`, backticks) directly after a run's text with no
+        # separator. Markdown/CommonMark treats "\" as an escape character
+        # for the following ASCII punctuation character - so if the author's
+        # text itself ends in a literal backslash (extremely common here:
+        # Windows paths like `C:\xampp\apache\logs\`), the emitted source
+        # reads "...logs\</span>", and the backslash escapes the "<" of our
+        # own closing tag into a literal, inert "<" character *before* raw
+        # HTML tag matching ever runs. The real "</span>" never registers as
+        # a tag: the span never closes in the DOM, its highlighting bleeds
+        # into everything up to the next actual "</span>" downstream, and
+        # the swallowed tag surfaces as literal "</span>" text on the page.
+        # Doubling every backslash first (markdown: "\\" -> one literal "\")
+        # guarantees no author backslash is ever adjacent-and-unescaped next
+        # to whatever markup we inject afterward - not just before "</span>",
+        # but before any following punctuation (concatenated runs, a link's
+        # "]", etc). Must run before the "~" escape below inserts its own
+        # intentional backslash, or that fresh backslash would get doubled
+        # too and un-escape the tilde again.
+        #
         # Command runs (foreground == CMD_COLOR, below) are emitted as raw
         # `<span class="cmd">` HTML, which Prose.tsx re-parses with a real
         # HTML parser (rehype-raw). Author text can itself contain "<", ">"
@@ -87,16 +107,16 @@ class Converter:
         # unescaped, the parser reads "<?php" as the start of a bogus
         # comment/processing-instruction that swallows everything up to the
         # next ">", silently deleting the payload and/or leaving the "cmd"
-        # span unclosed (bleeding its styling into later text and orphaning
-        # a stray "</span>" further down). Entity-escape first so the parser
-        # sees inert text instead of markup.
+        # span unclosed the same way. Entity-escape so the parser sees inert
+        # text instead of markup.
         # A literal "~" is GFM strikethrough syntax (remark-gfm's
         # singleTilde default treats even a lone "~" as a delimiter), so
         # escape it wherever it isn't already protected by a real code span.
         # Skip runs headed for backtick/monospace wrapping below - inside a
-        # code span both would show up literally instead of being consumed as
-        # markup/escapes.
+        # code span all three would show up literally instead of being
+        # consumed as markup/escapes.
         if attrs.get("family") != "monospace":
+            text = text.replace("\\", "\\\\")
             text = (
                 text.replace("&", "&amp;")
                 .replace("<", "&lt;")
@@ -132,8 +152,10 @@ class Converter:
             cells = []
             for cell in row.findall("cell"):
                 c = (cell.text or "").replace("\n", " ").strip()
-                # Same HTML-entity + tilde escaping as style_run: cell text is
-                # plain (no monospace runs), so always escape.
+                # Same backslash + HTML-entity + tilde escaping as style_run
+                # (same order, same reasons): cell text is plain (no
+                # monospace runs), so always escape.
+                c = c.replace("\\", "\\\\")
                 c = c.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                 c = c.replace("~", "\\~")
                 cells.append(c)

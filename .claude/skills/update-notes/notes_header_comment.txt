@@ -25,7 +25,11 @@
 // HTML-entity-escaped so a raw `<?php ... ?>` inside a `<span class="cmd">`
 // isn't swallowed as bogus markup by the raw-HTML parser; "~" is
 // backslash-escaped outside code spans so it isn't read as GFM
-// strikethrough.
+// strikethrough. Any literal backslash in non-code text (very common in
+// Windows paths like `C:\xampp\apache\logs\`) is itself doubled first, so
+// a trailing backslash can't markdown-escape whatever markup gets appended
+// right after it (e.g. a closing `</span>`) into inert text and silently
+// leave the real tag unclosed.
 // No wording was changed, including typos in the source.
 //
 // The tree is *not* a fixed two-level section/note shape - CherryTree

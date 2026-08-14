@@ -147,6 +147,29 @@ CherryTree stores each node's rich text as XML: `<node>` containing
   is protected from this pass via a placeholder substitution (it already
   contains its own correctly-formatted internal hard breaks) so the global
   newline pass doesn't double up spacing inside it.
+- **Leading indentation**: the notebook indents sub-points with tabs/spaces,
+  but markdown strips leading whitespace from hard-break continuation lines,
+  flattening them flush-left. Just before the newline pass, `convert_body`
+  converts each line's leading whitespace to non-breaking spaces (tab →
+  4×`&nbsp;`, space → 1×`&nbsp;`) so the original nesting still renders. It
+  runs on the assembled body where heading/table blocks are placeholders at
+  column 0, so those are untouched; the injected `&nbsp;` is added after
+  per-run escaping (below), so it is not itself re-escaped.
+- **HTML entities (`<`, `>`, `&`)**: escaped to `&lt;`/`&gt;`/`&amp;` in
+  every run and every table cell, *except* inside monospace/backtick runs
+  (same exemption as `~`). Command runs are emitted as raw
+  `<span class="cmd">…</span>` HTML, which `Prose.tsx` re-parses with a real
+  HTML parser (`rehype-raw`). A literal `<?php … ?>` payload left unescaped
+  is read as a bogus comment/processing-instruction: the parser swallows it
+  up to the next `>`, silently dropping the snippet and — when the `<?php`
+  has no matching `?>` on its own line (e.g. `<span class="cmd"><?php</span>`
+  in a Phar stub) — eating the closing `</span>` too, so the `cmd` styling
+  bleeds into everything after and a stray `</span>` surfaces downstream.
+  Escaping makes the parser see inert text. Escape `&` first so it doesn't
+  double-escape the `&` in `&lt;`/`&gt;`. Backtick code spans are exempt:
+  their text is emitted as an inline `<code>` node, escaped on output and
+  never re-parsed as raw HTML, so escaping there would only inject a visible
+  `&lt;` into copyable command text.
 - **Literal `~` (tilde)**: escaped to `\~` in every run and every table
   cell, *except* inside runs wrapped in backticks (`family="monospace"`).
   remark-gfm treats even a lone `~` as strikethrough syntax (its

@@ -80,13 +80,28 @@ class Converter:
     def style_run(self, text, attrs):
         if not text:
             return ""
+        # Command runs (foreground == CMD_COLOR, below) are emitted as raw
+        # `<span class="cmd">` HTML, which Prose.tsx re-parses with a real
+        # HTML parser (rehype-raw). Author text can itself contain "<", ">"
+        # or "&" (e.g. a literal `<?php ... ?>` webshell snippet) - left
+        # unescaped, the parser reads "<?php" as the start of a bogus
+        # comment/processing-instruction that swallows everything up to the
+        # next ">", silently deleting the payload and/or leaving the "cmd"
+        # span unclosed (bleeding its styling into later text and orphaning
+        # a stray "</span>" further down). Entity-escape first so the parser
+        # sees inert text instead of markup.
         # A literal "~" is GFM strikethrough syntax (remark-gfm's
         # singleTilde default treats even a lone "~" as a delimiter), so
         # escape it wherever it isn't already protected by a real code span.
         # Skip runs headed for backtick/monospace wrapping below - inside a
-        # code span the backslash would show up literally instead of being
-        # consumed as an escape.
+        # code span both would show up literally instead of being consumed as
+        # markup/escapes.
         if attrs.get("family") != "monospace":
+            text = (
+                text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+            )
             text = text.replace("~", "\\~")
         out = text
         link = attrs.get("link")
@@ -114,7 +129,14 @@ class Converter:
         root = ET.fromstring(xml_txt)
         rows = []
         for row in root.findall("row"):
-            cells = [(cell.text or "").replace("\n", " ").strip().replace("~", "\\~") for cell in row.findall("cell")]
+            cells = []
+            for cell in row.findall("cell"):
+                c = (cell.text or "").replace("\n", " ").strip()
+                # Same HTML-entity + tilde escaping as style_run: cell text is
+                # plain (no monospace runs), so always escape.
+                c = c.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                c = c.replace("~", "\\~")
+                cells.append(c)
             rows.append(cells)
         if not rows:
             return ""
@@ -234,6 +256,19 @@ class Converter:
                 if s.endswith("\n\n"):
                     content = content.lstrip("\n")
                 s += content
+
+        # Preserve leading indentation. The notebook indents sub-points with
+        # tabs/spaces, but markdown strips leading whitespace from hard-break
+        # continuation lines, flattening them flush-left. Convert each line's
+        # leading whitespace to non-breaking spaces (tab -> 4, space -> 1) so
+        # the original nesting still shows. Runs before the newline pass;
+        # heading/table blocks are placeholders sitting at column 0, so they
+        # are untouched. The introduced "&nbsp;" is added after per-run
+        # escaping, so it is not re-escaped.
+        def _indent(m):
+            return m.group(0).replace("\t", "&nbsp;" * 4).replace(" ", "&nbsp;")
+
+        s = re.sub(r"(?m)^[ \t]+", _indent, s)
 
         # collapse 2+ newlines to a clean paragraph break, single newlines
         # become markdown hard breaks (trailing two spaces)

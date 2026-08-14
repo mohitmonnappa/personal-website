@@ -19,6 +19,13 @@
 // within a run of text were turned into markdown hard breaks (trailing
 // two spaces) so the author's original line-by-line layout still renders
 // as line breaks, since remark's default softbreak collapses to a space.
+// Leading indentation (tabs/spaces) on those lines - which markdown would
+// otherwise strip - is kept as non-breaking spaces (tab -> 4) so nested
+// sub-points stay indented. Literal "<", ">" and "&" in non-code text are
+// HTML-entity-escaped so a raw `<?php ... ?>` inside a `<span class="cmd">`
+// isn't swallowed as bogus markup by the raw-HTML parser; "~" is
+// backslash-escaped outside code spans so it isn't read as GFM
+// strikethrough.
 // No wording was changed, including typos in the source.
 //
 // The tree is *not* a fixed two-level section/note shape - CherryTree

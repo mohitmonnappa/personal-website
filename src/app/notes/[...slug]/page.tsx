@@ -29,10 +29,12 @@ export default async function NotePage({
   if (!found) notFound();
 
   const ancestors = found.path.slice(0, -1);
-  // Only direct children that are themselves routable (have a body) -
-  // a child that's a pure sub-category (no body of its own) still shows
-  // up in the sidebar's full nested tree, just not as a link here.
-  const children = (found.node.children ?? []).filter((child) => child.body);
+  // Show all direct children that are navigable — either they have their own
+  // body, or they have children of their own (so they'll show an "In this
+  // section" list). Pure empty leaf nodes (no body, no children) are excluded.
+  const children = (found.node.children ?? []).filter(
+    (child) => child.body || (child.children && child.children.length > 0),
+  );
 
   return (
     <div>
@@ -60,9 +62,11 @@ export default async function NotePage({
         </div>
       )}
 
-      <div className="mt-8">
-        <Prose source={found.node.body!} />
-      </div>
+      {found.node.body && (
+        <div className="mt-8">
+          <Prose source={found.node.body} />
+        </div>
+      )}
     </div>
   );
 }

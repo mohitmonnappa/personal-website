@@ -23,7 +23,7 @@ function NoteTreeItem({
 
   return (
     <li>
-      {node.body ? (
+      {node.body || hasChildren ? (
         <Link
           href={href}
           className={clsx(
@@ -43,11 +43,7 @@ function NoteTreeItem({
         <span
           className={clsx(
             "-ml-px block border-l border-transparent py-1.5 pl-4",
-            hasChildren && depth === 0
-              ? "text-clay/70"
-              : hasChildren && depth === 1
-                ? "text-clay-deep/70"
-                : "text-stone/70"
+            "text-stone/70"
           )}
         >
           {node.title}

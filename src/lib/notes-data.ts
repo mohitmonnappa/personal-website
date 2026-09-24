@@ -540,7 +540,6 @@ The combination of X-Frame-Options: DENY, X-Content-Type-Options: nosniff, and R
       {
         slug: "services",
         title: "Services",
-        body: `Enumeration and exploitation of services found on nmap scan`,
         children: [
           {
             slug: "ftp-21",
@@ -1140,7 +1139,7 @@ Payloads are split between different same parameter named values (Eg: <span clas
 | space2mssqlblank | Replaces (MsSQL) instances of space character ( ) with a random blank character from a valid set of alternate characters |  
 | space2plus | Replaces space character ( ) with plus (+) |  
 | space2randomblank | Replaces space character ( ) with a random blank character from a valid set of alternate characters |  
-| symboliclogical | Replaces AND and OR logical operators with their symbolic counterparts (&amp;&amp; and ||) |  
+| symboliclogical | Replaces AND and OR logical operators with their symbolic counterparts (&amp;&amp; and \\|\\|) |  
 | versionedkeywords | Encloses each non-function keyword with (MySQL) versioned comment |  
 | versionedmorekeywords | Encloses each keyword with (MySQL) versioned comment |`,
                   },
@@ -4122,7 +4121,7 @@ export function findNote(slugPath: string[]): FoundNote | undefined {
   }
 
   const node = path[path.length - 1];
-  if (!node?.body && !node?.children?.length) return undefined;
+  if (!node?.body) return undefined;
   return { node, path };
 }
 
@@ -4132,8 +4131,7 @@ export function allNoteParams(): { slug: string[] }[] {
   function walk(nodes: NoteNode[], prefix: string[]) {
     for (const n of nodes) {
       const path = [...prefix, n.slug];
-      if (n.body || (n.children && n.children.length > 0))
-        params.push({ slug: path });
+      if (n.body) params.push({ slug: path });
       if (n.children) walk(n.children, path);
     }
   }

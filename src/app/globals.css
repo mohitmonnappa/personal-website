@@ -32,8 +32,11 @@
   --font-mono: var(--font-mono);
 }
 
-* {
-  border-color: var(--color-line);
+/* Layered so Tailwind's border-color utilities (border-pine etc.) can win. */
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
 }
 
 body {

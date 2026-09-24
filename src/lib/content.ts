@@ -28,7 +28,12 @@ export function getProjects(): Project[] {
       subtitle: data.subtitle ?? "",
       tech: data.tech ?? [],
       category: data.category ?? "",
-      date: data.date ? String(data.date) : "",
+      // gray-matter parses `date: 2024-08-01` into a Date; normalize to ISO
+      // so the string sort below is chronological.
+      date:
+        data.date instanceof Date
+          ? data.date.toISOString().slice(0, 10)
+          : String(data.date ?? ""),
       summary: data.summary ?? "",
       body: content.trim(),
     };
@@ -66,6 +71,9 @@ export function getBanditLevels(): BanditLevel[] {
 }
 
 export function getBanditLevel(slug: string): BanditLevel | null {
+  // Same filter as getBanditLevels — walkthrough.md / _index.md live in the
+  // same folder but aren't level pages.
+  if (!/^bandit\d{2}$/.test(slug)) return null;
   const filePath = path.join(
     CONTENT_DIR,
     "posts",

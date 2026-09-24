@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
@@ -26,6 +26,12 @@ function buildSnippet(text: string, query: string): string | null {
   return `${prefix}${text.slice(start, end)}${suffix}`;
 }
 
+// No real external store to subscribe to — navigator.platform never
+// changes — so the subscribe callback is a no-op.
+function subscribeNoop() {
+  return () => {};
+}
+
 function highlight(text: string, query: string) {
   const index = text.toLowerCase().indexOf(query.toLowerCase());
   if (index === -1) return text;
@@ -44,9 +50,14 @@ export function CommandPalette() {
   const router = useRouter();
   const [focused, setFocused] = useState(false);
   const [query, setQuery] = useState("");
-  // Defaults to false (Ctrl) so server render and first client render agree —
-  // Mac users get the ⌘ glyph swapped in after mount, no hydration mismatch.
-  const [isMac, setIsMac] = useState(false);
+  // Server snapshot is false (Ctrl) so server render and first client render
+  // agree — Mac users get the ⌘ glyph swapped in once the client snapshot
+  // runs, no hydration mismatch.
+  const isMac = useSyncExternalStore(
+    subscribeNoop,
+    () => /Mac|iPhone|iPad|iPod/.test(navigator.platform),
+    () => false
+  );
   const [activeIndex, setActiveIndex] = useState(0);
   const [prevQuery, setPrevQuery] = useState(query);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -101,10 +112,6 @@ export function CommandPalette() {
     setQuery("");
     inputRef.current?.focus();
   }
-
-  useEffect(() => {
-    setIsMac(/Mac|iPhone|iPad|iPod/.test(navigator.platform));
-  }, []);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -170,6 +177,7 @@ export function CommandPalette() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
           placeholder="Search notes"
+          aria-label="Search notes"
           className="w-full bg-transparent text-ink outline-none! placeholder:text-stone"
         />
         {query ? (

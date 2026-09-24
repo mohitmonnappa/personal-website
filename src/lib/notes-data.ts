@@ -59,30 +59,34 @@ export const noteTree: NoteNode[] = [
           {
             slug: "nmap",
             title: "Nmap",
-            body: `## Host discovery
+            body: `NOTE: Always run as root user as the commands don't have sudo in them.
+
+## Host discovery
+
+<span class="cmd">nmap -sn [IP_Range] | grep for | cut -d" " -f5</span>
+
+| Flag | Desc |  
+| --- | --- |  
+| -iL [file] | Input host list from a file |  
+| -sn | No port scan, host discovery only (ARP then ICMP by default on same subnet) |  
+| --packet-trace | Show all packets sent/received, useful for debugging discovery |  
+| --reason | Displays the reason for specific result. |  
+| --disable-arp-ping | Disable ARP ping even on local subnet |  
+| -PE | ICMP echo request ping, often blocked by firewalls |  
+| -Pn | Disables ICMP Echo request |  
+| -PR | ARP ping only, default for local subnet, fast and reliable |  
+| -PP | ICMP timestamp request ping |  
+| -PM | ICMP address mask request ping |  
+| -PS | TCP SYN ping, sends SYN, expects SYN/ACK, default port 80 |  
+| -PA | TCP ACK ping, sends ACK, expects RST if host is up, default port 80 |  
+| -PU | UDP ping, expects ICMP port unreachable if host is up |  
+| -n | No DNS resolution, speeds up scan |  
+| --exclude [hosts] | Exclude specific hosts/ranges |  
+| --excludefile [file] | Exclude hosts listed in a file |
 
 ### No port scanning : <span class="cmd">-sn</span>
 
-<span class="cmd">nmap -sn [IP_Range]</span>  
-<span class="cmd">nmap -sn 192.168.0.1-254 or 192.168.0.1/24</span>
-
-### Using ARP: <span class="cmd">-PR</span>
-
-default if host is in same subnet  
-<span class="cmd">-PR</span>: only ARP scan, eg: <span class="cmd">nmap -sn -PR 192.168.0.1-254 or 192.168.0.1/24</span>  
-another way: <span class="cmd">arp-scan [IP_Range]</span>
-
-### Using ICMP ping: <span class="cmd">-PE, -PP, -PM</span>
-
-ICMP **echo** packet: usually blocked: <span class="cmd">nmap -sn -PE [IP_Range]</span>  
-ICMP **timestamp** packet: <span class="cmd">nmap -sn -PP [IP_Range]</span>  
-ICMP **address** mask query: <span class="cmd">nmap -sn -PM [IP_Range]</span>
-
-TCP Syn ping: sends syn, expects syn/ack : <span class="cmd">-PS </span>  
-TCP Ack ping: sends ack, expects RST if host is up : <span class="cmd">-PA</span>  
-UDP ping: expects ICMP port unreachable packet if host is up and closed port : <span class="cmd">-PU</span>
-
-<span class="cmd">-Pn</span>: No pinging hosts, treat all as alive and perform host discovery
+By default ARP packets are sent first, and then ICMP echo.
 
 ## Port scans
 
@@ -102,29 +106,58 @@ UDP ping: expects ICMP port unreachable packet if host is up and closed port : <
 | -O | OS detection |  
 | -sV | Service detection on open ports |  
 | -sC | Run default scripts on open ports |  
+| -A | Performs service, OS detection, traceroute and uses defaults scripts while scanning |  
 | -v or -vv | Verbosity |  
 | -oN or -oA | Save normal or all formats |  
-| -T4 or -T5 | run faster T3 by default |  
-| --min-parallelism [number] | no of probes in parallel |  
-| --scanflags RSTSYNFIN | Custom scan, set SYN, RST, and FIN together |
+| -T4 or -T5 | runs faster, T3 by default |  
+| --scanflags RST,SYN,FIN | Custom scan, set SYN, RST, and FIN together |  
+| --stats-every=5s | Shows progress of scan every 5 seconds. |
 
 udp, null (no flags set), fin (finish flag set) and xmas (psh, urg and fin set: malformed packet) scans respond to only **closed ports with RST** packet.  
 Otherwise it is open|filtered  
 Window scan <span class="cmd">-sW</span> : checks window field of rst packet, sometimes responds differently according to firewall so it **may** display as open ports.
 
+### Port States
+
+<span class="cmd">open</span>: If target sends SYN-ACK flagged packet  
+<span class="cmd">closed</span>: If target responds with RST flagged packet  
+<span class="cmd">filtered</span>: If Nmap does not receive a packet back, might be dropped or ignored by firewall  
+<span class="cmd">unfiltered</span>: Only occurs during the **TCP-ACK** scan. Port is accessible, but cannot be determined whether it is open or closed.  
+<span class="cmd">open | filtered</span>: No response for specific port. Indicates that a firewall or packet filter may protect the port.  
+<span class="cmd">closed | filtered</span>: Occurs only in the IP ID idle (Zombie) scans and indicates that it was impossible to determine if the scanned port is closed or filtered by a firewall.
+
+### Create HTML Report
+
+• Output must be saved in XML  
+• Convert stored results from XML to HTML using <span class="cmd">xsltproc</span>  
+<span class="cmd">xsltproc target.xml -o target.html</span>  
+• Open the HTML file in browser
+
+## Performace
+
 ## NSE: Scripting Engine
 
-**Searching**:   
+Searching:   
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">grep "category_name or protocol or anything specific" /usr/share/nmap/scripts/script.db</span>
 
-**Categories of scripts:**  
-• safe : Won't affect the target  
-• intrusive : Not safe: likely to affect the target  
-• vuln : Scan for vulnerabilities  
-• exploit : Attempt to exploit a vulnerability  
-• auth :-Attempt to bypass authentication for running services (e.g. Log into an FTP server anonymously)  
-• brute : Attempt to bruteforce credentials for running services  
-• discovery : Attempt to query running services for further information about the network (e.g. query an SNMP server).
+Categories of scripts:
+
+| Category | Description |  
+| --- | --- |  
+| auth | Determination of authentication credentials. |  
+| broadcast | Scripts, which are used for host discovery by broadcasting and the discovered hosts, can be automatically added to the remaining scans. |  
+| brute | Executes scripts that try to log in to the respective service by brute-forcing with credentials. |  
+| default | Default scripts executed by using the -sC option. |  
+| discovery | Evaluation of accessible services. |  
+| dos | These scripts are used to check services for denial of service vulnerabilities and are used less as it harms the services. |  
+| exploit | This category of scripts tries to exploit known vulnerabilities for the scanned port. |  
+| external | Scripts that use external services for further processing. |  
+| fuzzer | This uses scripts to identify vulnerabilities and unexpected packet handling by sending different fields, which can take much time. |  
+| intrusive | Intrusive scripts that could negatively affect the target system. |  
+| malware | Checks if some malware infects the target system. |  
+| safe | Defensive scripts that do not perform intrusive and destructive access. |  
+| version | Extension for service detection. |  
+| vuln | Identification of specific vulnerabilities. |
 
 ## Firewall Evasion:
 

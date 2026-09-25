@@ -135,6 +135,17 @@ Window scan <span class="cmd">-sW</span> : checks window field of rst packet, so
 
 ## Performace
 
+| Flag | Default | Description |  
+| --- | --- | --- |  
+| --initial-rtt-timeout [time] | 100ms | Initial timeout |  
+| --min-rtt-timeout [time] | - | Minimum timeout |  
+| --max-rtt-timeout [time] | 100ms | Maximum timeout |  
+| --max-retries [num] | 10 | Max retries |  
+| --min-rate [number] | - | Minimum packets/sec |  
+| --max-rate [number] | - | Maximum packets/sec |
+
+Rates : If we know the network bancwitdth, we can set the min. rate for sending packets.
+
 ## NSE: Scripting Engine
 
 Searching:   
@@ -163,20 +174,41 @@ Categories of scripts:
 
 [https://nmap.org/book/man-bypass-firewalls-ids.html](https://nmap.org/book/man-bypass-firewalls-ids.html)
 
+### ACK Scan
+
+Sometimes <span class="cmd">SYN</span> flag connection attempts are blocked by firewalls, therefore, go for ACK scan <span class="cmd">-sA</span>  
+<span class="cmd">nmap [MACHINE_IP] -p [ports] -sA -Pn -n --disable-arp-ping</span>
+
+### Decoys
+
+<span class="cmd">-D [decoy1], [decoy2], ME, [decoy3], .. </span>  
+<span class="cmd">-D RND: [num]</span>  
+Makes it appear that the decoys are scanning the target network too. IDS won't know which IP was scanning them and which were innocent decoys.   
+<span class="cmd">ME</span> : position of your IP address - just leave it as <span class="cmd">ME</span>, no need of replacing it.
+
+### DNS Proxying
+
+Usually traffic on port 53 is trusted and let through unfiltered.  
+Use 53 as source port in nmap scan  
+<span class="cmd">--source-port 53</span>  
+Connect to filtered port  
+<span class="cmd">ncat -nv --source-port 53 [MACHINE_IP] [PORRT]</span>
+
+### Proxies
+
+<span class="cmd">--proxies [Comma-separated list of proxy URLs]</span> (Relay TCP connections through a chain of proxies)  
+<span class="cmd">--randomize-hosts</span> (Randomize target host order) : make the scans less obvious to various network monitoring systems, especially when you combine it with slow timing options. Tells Nmap to shuffle each group of up to 16384 hosts before it scans them.
+
+### Fragmentation
+
 <span class="cmd">-f</span> : Fragment the packets ,less likely that the packets will be detected by a firewall or IDS.  
-<span class="cmd">--mtu &lt;number&gt;</span> : accepts maximum transmission unit size to use for the packets sent. This must be a **multiple of 8**.  
+<span class="cmd">--mtu [number]</span> : accepts maximum transmission unit size to use for the packets sent. This must be a **multiple of 8**.  
 <span class="cmd">--scan-delay [time] ms</span> : add a delay between packets sent. useful if the network is unstable and evading time-based firewall/IDS triggers.  
 <span class="cmd">--badsum</span> : generates invalid checksum for packets. Any real TCP/IP stack would drop this packet, however, firewalls may potentially respond automatically, 	without bothering to check the checksum of the packet. As such, this switch can be used to determine the presence of a firewall/IDS.
 
-<span class="cmd">-D [decoy1], [&lt;decoy2&gt;], [ME]</span> : RND for random; makes it appear to the remote host that the host(s) you specify as decoys are scanning the target network too. IDS won't know which IP was scanning them and which were innocent decoys. **ME position of your IP address**  
-<span class="cmd">--proxies [Comma-separated list of proxy URLs]</span> (Relay TCP connections through a chain of proxies)  
-<span class="cmd">--randomize-hosts (Randomize target host order)</span> : make the scans less obvious to various network monitoring systems, especially when you combine it with slow timing options. Tells Nmap to shuffle each group of up to 16384 hosts before it scans them.
+### Zombie scan
 
-<span class="cmd">-S [IP_Addres]</span> (Spoof source address)  
-<span class="cmd">--spoof-mac [MAC address, prefix, or vendor name]</span> (Spoof MAC address)  
-<span class="cmd">--source-port [portnumber] or -g [portnumber]</span> (Spoof source port number) : argument examples are Apple, 0, 01:02:03:04:05:06, deadbeefcafe, 0020F2, and Cisco. 
-
-<span class="cmd">-sI [ZOMBIE_IP] [your_IP]</span> : Zombie scan`,
+<span class="cmd">-sI [ZOMBIE_IP] [your_IP]</span>`,
           },
           {
             slug: "wordlists",

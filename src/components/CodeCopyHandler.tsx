@@ -20,7 +20,7 @@ export function CodeCopyHandler() {
           button.setAttribute("data-copied", "true");
           window.setTimeout(() => button.removeAttribute("data-copied"), 1500);
         })
-        .catch(() => {});
+        .catch((err) => console.error("Copy failed:", err));
     }
 
     document.addEventListener("click", onClick);

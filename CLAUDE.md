@@ -76,14 +76,14 @@ which one a given section uses:
      walkthroughs, numbered sequentially; `getBanditLevels()` /
      `getBanditLevel()` parse the level number from the filename
 
-2. **TypeScript data modules** for two sections, one now fully real, one
-   still partly placeholder:
+2. **TypeScript data modules** for two sections, both now real:
    - `src/lib/machines-data.ts` — HTB/TryHackMe machine writeups, keyed by
      `platform: "HackTheBox" | "TryHackMe"` and rendered through the shared
-     `MachinesList`/`MachineDetail`/`MachineCard` components. `"gaming-server"`
-     and `"basic-pentesting"` are real, condensed TryHackMe writeups; `"ledger"`
-     (HackTheBox) is still a fictional placeholder — don't assume every entry
-     in this file reflects a real engagement. Raw source notes for a real
+     `MachinesList`/`MachineDetail`/`MachineCard` components. Every entry is
+     a real, condensed writeup (`"gaming-server"`, `"basic-pentesting"`,
+     `"checkmate"`, `"pickle-rick"`, all TryHackMe); there's no HackTheBox
+     entry yet — `MachinesList` renders an empty-state message instead of
+     an empty grid until one's added. Raw source notes for a real
      writeup aren't necessarily inside this repo: `"gaming-server"` came from
      the gitignored `Gaming Server/` folder at the project root, while
      `"basic-pentesting"` was read directly from an Obsidian vault path
@@ -152,8 +152,7 @@ which one a given section uses:
 
    The `Gaming Server/` and `PenTesting notes.ctb` raw sources are
    intentionally excluded from git via `.gitignore` — they're personal raw
-   notes, not site content. `machines-data.ts`'s `"ledger"` entry is the
-   only remaining placeholder in either file; if you convert it later,
+   notes, not site content. If you add a HackTheBox writeup later,
    reshape/extend `Machine`/`MachinePhase` rather than introducing a third
    content source.
 

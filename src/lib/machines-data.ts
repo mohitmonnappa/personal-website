@@ -1,6 +1,6 @@
-// "gaming-server" and "basic-pentesting" are real, condensed writeups.
-// Everything else in this file is still placeholder content used to
-// design the layout, pending conversion from raw notes.
+// Every entry here is a real, condensed writeup. There's currently no
+// HackTheBox entry — MachinesList renders an empty-state message for that
+// platform until one's added.
 
 export type MachinePhase = {
   title: string;

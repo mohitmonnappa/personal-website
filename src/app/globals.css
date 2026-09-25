@@ -32,10 +32,16 @@
   --font-mono: var(--font-mono);
 }
 
-/* Layered so Tailwind's border-color utilities (border-pine etc.) can win. */
+/* Layered so Tailwind's utilities (border-pine, focus-visible:outline-* etc.)
+   can win over these — an unlayered rule always beats @layer utilities. */
 @layer base {
   * {
     border-color: var(--color-line);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-pine);
+    outline-offset: 3px;
   }
 }
 
@@ -46,11 +52,6 @@ body {
 ::selection {
   background: var(--color-pine);
   color: var(--color-paper);
-}
-
-:focus-visible {
-  outline: 2px solid var(--color-pine);
-  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {

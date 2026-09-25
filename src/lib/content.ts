@@ -49,11 +49,15 @@ export type BanditLevel = {
   body: string;
 };
 
+// Matches level-page filenames (bandit01.md) and slugs (bandit01) — anything
+// else in the folder (walkthrough.md, _index.md) isn't a level page.
+const BANDIT_SLUG_RE = /^bandit\d{2}$/;
+
 export function getBanditLevels(): BanditLevel[] {
   const dir = path.join(CONTENT_DIR, "posts", "overthewire", "bandit");
   const files = fs
     .readdirSync(dir)
-    .filter((f) => /^bandit\d{2}\.md$/.test(f));
+    .filter((f) => f.endsWith(".md") && BANDIT_SLUG_RE.test(f.slice(0, -3)));
 
   const levels = files.map((file) => {
     const raw = fs.readFileSync(path.join(dir, file), "utf8");
@@ -71,9 +75,7 @@ export function getBanditLevels(): BanditLevel[] {
 }
 
 export function getBanditLevel(slug: string): BanditLevel | null {
-  // Same filter as getBanditLevels — walkthrough.md / _index.md live in the
-  // same folder but aren't level pages.
-  if (!/^bandit\d{2}$/.test(slug)) return null;
+  if (!BANDIT_SLUG_RE.test(slug)) return null;
   const filePath = path.join(
     CONTENT_DIR,
     "posts",

@@ -32,6 +32,16 @@ function subscribeNoop() {
   return () => {};
 }
 
+// getSnapshot is called on every render (useSyncExternalStore's contract),
+// so cache the result instead of re-running the regex test each time.
+let cachedIsMac: boolean | null = null;
+function getIsMacSnapshot() {
+  if (cachedIsMac === null) {
+    cachedIsMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+  }
+  return cachedIsMac;
+}
+
 function highlight(text: string, query: string) {
   const index = text.toLowerCase().indexOf(query.toLowerCase());
   if (index === -1) return text;
@@ -53,11 +63,7 @@ export function CommandPalette() {
   // Server snapshot is false (Ctrl) so server render and first client render
   // agree — Mac users get the ⌘ glyph swapped in once the client snapshot
   // runs, no hydration mismatch.
-  const isMac = useSyncExternalStore(
-    subscribeNoop,
-    () => /Mac|iPhone|iPad|iPod/.test(navigator.platform),
-    () => false
-  );
+  const isMac = useSyncExternalStore(subscribeNoop, getIsMacSnapshot, () => false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [prevQuery, setPrevQuery] = useState(query);
   const inputRef = useRef<HTMLInputElement>(null);

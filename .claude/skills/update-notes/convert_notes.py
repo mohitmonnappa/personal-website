@@ -158,6 +158,7 @@ class Converter:
                 c = c.replace("\\", "\\\\")
                 c = c.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                 c = c.replace("~", "\\~")
+                c = c.replace("|", "\\|")
                 cells.append(c)
             rows.append(cells)
         if not rows:

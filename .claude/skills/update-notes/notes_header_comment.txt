@@ -34,7 +34,8 @@
 //
 // The tree is *not* a fixed two-level section/note shape - CherryTree
 // nodes nest arbitrarily deep, and a "category" node can carry its own
-// body text in addition to children (e.g. "Windows File Transfer"). Only
-// nodes with a non-empty `body` are routable pages; nodes without one
-// (pure category folders, or a handful of never-written-up leaf topics
-// like "SNMP") are sidebar/index labels only.
+// body text in addition to children (e.g. "Windows File Transfer"). A node
+// is routable if it has a non-empty `body` *or* children - a body-less
+// category node still gets a page, showing only its "In this section"
+// child list. Only true empty leaves (no body, no children - a handful of
+// never-written-up topics like "SNMP") are sidebar/index labels only.

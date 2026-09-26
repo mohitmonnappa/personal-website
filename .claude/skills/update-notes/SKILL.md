@@ -84,7 +84,16 @@ explicitly gives a different path in the conversation.
      verbatim from `notes_trailing_block.txt`, but always re-verify since
      `src/app/notes/[...slug]/page.tsx` imports `findNote`/`allNoteParams` and
      `src/components/CommandPalette.tsx` imports `noteSearchEntries` — the
-     build will fail without any of them).
+     build will fail without any of them). Specifically confirm `findNote`/
+     `allNoteParams` still treat a body-less node with children as routable
+     (`if (!node?.body && !node?.children?.length) return undefined;`, not a
+     bare `if (!node?.body)`) — this was once fixed directly in
+     `notes-data.ts` (commit `5c424d3`) without updating
+     `notes_trailing_block.txt`, so the very next sync silently reverted it
+     and broke sidebar links to category nodes like "Enumeration". The fix
+     now lives in `notes_trailing_block.txt` itself; if you ever need to
+     change this logic again, edit the `.txt` file, not just the generated
+     output.
    - `npm run build` — must succeed and generate all `/notes/[...slug]`
      routes. This is the real correctness gate.
 4. Commit locally on the worktree branch (per standing instruction: never
@@ -106,8 +115,12 @@ CherryTree stores each node's rich text as XML: `<node>` containing
 - **Tree**: walks `children(node_id, father_id, sequence)` from `father_id
   = 0`, in `sequence` order. A node's `slug` is `slugify(title)` (lowercase,
   non-alphanumeric runs collapsed to a single `-`). Only nodes whose
-  converted body is non-empty get a `body` field (pure-category nodes stay
-  sidebar-only, matching `NoteNode.body?`).
+  converted body is non-empty get a `body` field. A body-less node isn't
+  necessarily sidebar-only, though: `findNote`/`allNoteParams` (in
+  `notes_trailing_block.txt`) route any node that has a `body` *or*
+  children, so a pure-category node still gets a page showing its "In this
+  section" child list — only a true empty leaf (no body, no children) is
+  sidebar/index-only.
 - **Run formatting → markdown**, applied in this nesting order (innermost
   first): `link` → `[text](url)` (`link="webs <url>"` for external,
   `link="node <id>"` resolved via each node's precomputed root-to-node slug

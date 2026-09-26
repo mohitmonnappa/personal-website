@@ -25,8 +25,12 @@ workflow before making a non-trivial change.
 - Markdown in `content/` feeds the About page, projects, and Bandit
 	walkthroughs through `src/lib/content.ts`.
 - `src/lib/machines-data.ts` owns HTB/TryHackMe writeup data.
-- `src/lib/notes-data.ts` owns the recursive `/notes` tree. Only nodes with a
-	body are routable; do not assume the tree has a fixed depth.
+- `src/lib/notes-data.ts` owns the recursive `/notes` tree. A node is
+	routable if it has a body or children (not body alone); do not assume the
+	tree has a fixed depth. The file's trailing `findNote`/`allNoteParams`
+	helpers are spliced in verbatim by the `update-notes` skill from
+	`.claude/skills/update-notes/notes_trailing_block.txt` — edit that file
+	too when changing this logic, or the next sync reverts it.
 - `src/components/Prose.tsx` renders author-controlled markdown through the
 	unified/remark/rehype pipeline. Preserve raw HTML support and the copy-button
 	contract with `src/lib/rehype-command-copy.ts` and

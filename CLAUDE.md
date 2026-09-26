@@ -74,7 +74,13 @@ which one a given section uses:
      `ProjectCard` (title, subtitle, tech, category, summary)
    - `content/posts/overthewire/bandit/bandit##.md` — the Bandit wargame
      walkthroughs, numbered sequentially; `getBanditLevels()` /
-     `getBanditLevel()` parse the level number from the filename
+     `getBanditLevel()` parse the level number from the filename.
+     `src/lib/bandit-teaches.ts` is a separate, hand-transcribed
+     `Record<number, string>` of short "what this level teaches" labels
+     shown on `/writeups/bandit`, sourced from the summary list in
+     `content/posts/overthewire/bandit/walkthrough.md` — a level missing
+     from it just renders without the label, so add an entry there when
+     adding a new level
 
 2. **TypeScript data modules** for two sections, one now fully real, one
    still partly placeholder:
@@ -123,13 +129,21 @@ which one a given section uses:
      **`NoteNode` is a genuine
      recursive tree, not a fixed two-level shape** — CherryTree nodes nest
      arbitrarily deep, and a node can carry both its own `body` *and*
-     `children` (e.g. "Windows File Transfer"). Only nodes with a non-empty
-     `body` are routable (`findNote`/`allNoteParams` filter on this); a node
-     with children but no body of its own (a pure category, e.g.
-     "Exploitation") is sidebar-only — don't assume every tree node
-     has a page. `NotesSidebar.tsx` walks the recursive tree (rendering a
-     plain label for no-body nodes, a link for nodes with a body), and
-     colors nodes by structural tier, not content: `text-ink` for the
+     `children` (e.g. "Windows File Transfer"). A node is routable
+     (`findNote`/`allNoteParams` accept it) if it has a `body` *or*
+     children — a body-less category node (e.g. "Exploitation") still gets
+     a page, showing only its "In this section" child list; only a true
+     empty leaf (no body, no children) has no page at all. `findNote`/
+     `allNoteParams` live in `notes-data.ts`'s trailing block, which the
+     `update-notes` skill splices in verbatim from
+     `.claude/skills/update-notes/notes_trailing_block.txt` on every sync —
+     if you change this routing logic, edit that `.txt` file too, or the
+     next notes sync silently reverts it (this already happened once: the
+     body-or-children fix landed straight in `notes-data.ts` and got
+     reverted by the next sync until the `.txt` file was fixed to match).
+     `NotesSidebar.tsx` walks the recursive tree, rendering a link for any
+     routable node (body or children) and a plain label only for true empty
+     leaves, and colors nodes by structural tier, not content: `text-ink` for the
      top-level section label, `text-clay` for 2nd-level groups that have
      children (e.g. "Enumeration"), `text-clay-deep` for 3rd-level nested
      groups (e.g. "Tools" under "Enumeration"), and `text-stone` for
@@ -212,14 +226,19 @@ dynamic routes all use `generateStaticParams` for full static generation:
   `/writeups/tryhackme`, `/writeups/tryhackme/[slug]` — kept as separate
   routes/pages per platform (not a combined `/writeups/machines`) even
   though both read from the same `machines` array in `machines-data.ts` and
-  share `MachinesList`/`MachineDetail`
+  share `MachinesList`/`MachineDetail`. `MachineDetail` renders each
+  machine's phases through `src/components/StickySectionTabs.tsx` (a
+  generic sticky-header section list, `<StickySectionTabs.Item>` per
+  phase); its `topOffset="4rem"` must match the site Nav's height, same as
+  the `lg:top-36` sticky offset comment in `notes/layout.tsx` — keep both
+  in sync if the Nav height changes
 - `/notes`, `/notes/[...slug]` — catch-all under a shared
   `src/app/notes/layout.tsx` that renders the persistent `NotesSidebar`;
   the tree comes from `noteTree` in `notes-data.ts` and can be arbitrarily
   deep (see above), so adding a note = adding a node there, not creating
   new route files. A URL segment count doesn't map to a fixed "section" vs
   "note" level the way it used to — `findNote` walks the tree per segment
-  and only resolves if the matched node has a `body`
+  and resolves if the matched node has a `body` or children
 
 ## Notes search (command palette)
 
@@ -227,8 +246,10 @@ dynamic routes all use `generateStaticParams` for full static generation:
 (mounted once in `notes/layout.tsx`, right-aligned above the content
 column) — it's client-side search over the notes tree, not a site-wide
 command palette with actions. `noteSearchEntries()` in `notes-data.ts`
-walks the same body-gated `noteTree` used by `findNote`/`allNoteParams` and
-flattens each routable note into a flat `{title, url, breadcrumb, text}`
+walks the same `noteTree` used by `findNote`/`allNoteParams`, but its own
+filter is body-only (a body-less category page has no text worth
+indexing) — stricter than routing, which also accepts children-only
+nodes — and flattens each note with a body into a flat `{title, url, breadcrumb, text}`
 entry, reducing the markdown body to plain search text (unwrapping rather
 than stripping the `<span class="cmd">` command spans, since those are the
 highest-value search tokens, and dropping markdown syntax that would

@@ -1090,7 +1090,7 @@ Eg: Search for tables that contain the keyword user:
 
 ### User creds from other database
 
-• Search for colums containing keywords related to username and passwords  
+• Search for columns containing keywords related to username and passwords
 • Dump the table entries:  
 <span class="cmd">sqlmap -u "[TARGET_URL]?id=1" --dump -D [database] -T [table]</span>
 
@@ -1226,7 +1226,7 @@ Commonly targeted files on both and Windows systems.
 | /etc/issue | Message or system identification printed before the login prompt. |  
 | /etc/profile | Controls system-wide default variables, such as export variables, file creation mask (umask), and terminal types. |  
 | /proc/version | Displays the version of the Linux kernel. |  
-| /var/log/dmessage | Contains global system messages, including messages logged during system startup. |  
+| /var/log/dmesg | Contains global system messages, including messages logged during system startup. |
 | /var/mail/root | Contains all emails for the root user. |  
 | /var/log/apache2/access.log | Logs all requests made to the Apache web server. |  
 | C:\\\\boot.ini | Contains boot options for Windows computers with  firmware. |
@@ -3457,7 +3457,7 @@ Reference for AD cmdlets: [https://docs.microsoft.com/en-us/powershell/module/ac
 Unlock User  
 <span class="cmd">Unlock-ADAccount -Identity amasters</span>
 
-Change passoword of a user  
+Change password of a user
 <span class="cmd">Set-ADAccountPassword -Identity 'amasters' -Reset -NewPassword (Read-Host -AsSecureString -Prompt "NewP@ssw0rdReset!" -Force)</span>  
 Force Password Change  
 <span class="cmd">Set-ADUser -Identity amasters -ChangePasswordAtLogon $true</span>
@@ -4088,7 +4088,7 @@ Active Directory`,
 ☐ DNS Dumpster  
 ☐ Shodan.io  
 ☐ View page source for comments (CTF style)  
-☐ wappalyser  
+☐ Wappalyzer
 ☐ <span class="cmd">robots.txt</span>  
 ☐ <span class="cmd">sitemap.xml</span>  
 ☐ Wayback machine:  [https://archive.org/web/](https://archive.org/web/)  
@@ -4118,7 +4118,7 @@ Wordlists to use: [Wordlists](/notes/pentest-notes/enumeration/wordlists)`,
             title: "File upload methodology",
             body: `# File Upload
 
-☐ Look for upload page, use wappalyser to know the tech used  
+☐ Look for upload page, use Wappalyzer to know the tech used
 ☐ Search for Client side scripts that filter filenames (configure to edit js files -&gt; proxy settings).  
 ☐ Perform Innocent file upload  
 ☐ Access the uploaded innocent file: gobuster with -x flag

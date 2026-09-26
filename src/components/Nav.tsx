@@ -29,6 +29,10 @@ const UNDERLINE_PATHS = [
   "M5 29.8857C52.3147 26.9322 99.4329 21.6611 146.503 17.1765C151.753 16.6763 157.115 15.9505 162.415 15.6551C163.28 15.6069 165.074 15.4123 164.383 16.4275C161.704 20.3627 157.134 23.7551 153.95 27.4983C153.209 28.3702 148.194 33.4751 150.669 34.6605C153.638 36.0819 163.621 32.6063 165.039 32.2029C178.55 28.3608 191.49 23.5968 204.869 19.5404C231.903 11.3436 259.347 5.83254 288.793 5.12258C294.094 4.99476 299.722 4.82265 305 5.45025",
 ];
 
+function randomVariant() {
+  return Math.floor(Math.random() * UNDERLINE_PATHS.length);
+}
+
 export function Nav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -40,7 +44,7 @@ export function Nav() {
 
   function handleEnter(href: string) {
     if (nextVariant.current === null) {
-      nextVariant.current = Math.floor(Math.random() * UNDERLINE_PATHS.length);
+      nextVariant.current = randomVariant();
     }
     setVariantByHref((prev) => ({ ...prev, [href]: nextVariant.current! }));
     nextVariant.current = (nextVariant.current + 1) % UNDERLINE_PATHS.length;

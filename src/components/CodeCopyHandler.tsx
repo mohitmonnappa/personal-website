@@ -11,12 +11,16 @@ export function CodeCopyHandler() {
       if (!(button instanceof HTMLElement)) return;
 
       const command = button.getAttribute("data-copy");
-      if (command === null) return;
+      // navigator.clipboard is undefined on non-secure (plain http) origins.
+      if (command === null || !navigator.clipboard) return;
 
-      navigator.clipboard.writeText(command).then(() => {
-        button.setAttribute("data-copied", "true");
-        window.setTimeout(() => button.removeAttribute("data-copied"), 1500);
-      });
+      navigator.clipboard
+        .writeText(command)
+        .then(() => {
+          button.setAttribute("data-copied", "true");
+          window.setTimeout(() => button.removeAttribute("data-copied"), 1500);
+        })
+        .catch((err) => console.error("Copy failed:", err));
     }
 
     document.addEventListener("click", onClick);

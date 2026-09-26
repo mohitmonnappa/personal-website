@@ -25,11 +25,18 @@ export function MachinesList({
 
       <PageHeader eyebrow="Machines" title={title} description={description} />
 
-      <div className="mb-24 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {machines.map((m) => (
-          <MachineCard key={m.slug} machine={m} />
-        ))}
-      </div>
+      {machines.length === 0 ? (
+        <p className="mb-24 text-sm text-stone">
+          No writeups here yet — they&rsquo;ll appear as I work through
+          machines on this platform.
+        </p>
+      ) : (
+        <div className="mb-24 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {machines.map((m) => (
+            <MachineCard key={m.slug} machine={m} />
+          ))}
+        </div>
+      )}
     </Container>
   );
 }

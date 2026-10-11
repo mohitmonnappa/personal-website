@@ -482,17 +482,12 @@ Note: In WINDOWS: only double quotes must be used and quotes inside data must be
               {
                 slug: "passive",
                 title: "Passive",
-                body: `### whois
+                body: `## Tools
 
-Info about registered internet resources  
-Each WHOIS record contains:  
-&nbsp;&nbsp;&nbsp;&nbsp;• Domain Name: The domain name itself (e.g., example.com)  
-&nbsp;&nbsp;&nbsp;&nbsp;• Registrar: The company where the domain was registered (e.g., GoDaddy, Namecheap)  
-&nbsp;&nbsp;&nbsp;&nbsp;• Registrant Contact: The person or organization that registered the domain.  
-&nbsp;&nbsp;&nbsp;&nbsp;• Administrative Contact: The person responsible for managing the domain.  
-&nbsp;&nbsp;&nbsp;&nbsp;• Technical Contact: The person handling technical issues related to the domain.  
-&nbsp;&nbsp;&nbsp;&nbsp;• Creation and Expiration Dates: When the domain was registered and when it's set to expire.  
-&nbsp;&nbsp;&nbsp;&nbsp;• Name Servers: Servers that translate the domain name into an IP address.
+• Wappalyzer  
+• whois  
+• BuiltWith  
+• Wayback Machine
 
 ## DNS tools
 
@@ -512,20 +507,47 @@ Each WHOIS record contains:
 <span class="cmd">dig [DOMAIN_NAME] [TYPE]</span>  
 &nbsp;&nbsp;&nbsp;&nbsp;type: options above
 
+## Searching CT Logs
+
+### Censys
+
+[Censys Search](https://search.censys.io/) : Registration required, Extensive data and API access
+
+### crt.sh
+
+[crt.sh](https://crt.sh/) : Free, No registration, Limited data  
+• Find All Subdomains from crt.sh - May not work sometimes because crt.sh gets overloaded.  
+<span class="cmd">curl -s "https://crt.sh/?q=[domain]&amp;output=json" | jq -r '.[] | select(.name_value) | .name_value' | sort -u</span>  
+<span class="cmd">-r</span> tells \`jq\` to output raw strings.
+
+• Find Subdomains That Contain a Keyword  
+<span class="cmd">curl -s "https://crt.sh/?q=[domain]&amp;output=json" | jq -r '.[] | select(.name_value | contains("[keyword]")) | .name_value' | sort -u</span>
+
 ## Google Dorking
 
-### Directory and file enumeration:
-
-| Filter | Example | Description |  
-| --- | --- | --- |  
-| site | site:tryhackme.com. | only from the specified address. |  
-| inurl | inurl:admin | have the specified word in the URL |  
-| filetype | filetype:pdf | particular file extension |  
-| intitle | intitle:admin | word present in title |
-
-### Subdomain enumeration:
-
-<span class="cmd">site:*.domain.com -site:www.domain.com</span>
+| Operator | Operator Description | Example | Example Description |  
+| --- | --- | --- | --- |  
+| site: | Limits results to a specific website or domain. | site:example.com | Find all publicly accessible pages on example.com. |  
+| inurl: | Finds pages with a specific term in the URL. | inurl:login | Search for login pages on any website. |  
+| filetype: | Searches for files of a particular type. | filetype:pdf | Find downloadable PDF documents. |  
+| intitle: | Finds pages with a specific term in the title. | intitle:"confidential report" | Look for documents titled "confidential report" or similar variations. |  
+| intext: or inbody: | Searches for a term within the body text of pages. | intext:"password reset" | Identify webpages containing the term “password reset”. |  
+| cache: | Displays the cached version of a webpage (if available). | cache:example.com | View the cached version of example.com to see its previous content. |  
+| link: | Finds pages that link to a specific webpage. | link:example.com | Identify websites linking to example.com. |  
+| related: | Finds websites related to a specific webpage. | related:example.com | Discover websites similar to example.com. |  
+| info: | Provides a summary of information about a webpage. | info:example.com | Get basic details about example.com, such as its title and description. |  
+| define: | Provides definitions of a word or phrase. | define:phishing | Get a definition of "phishing" from various sources. |  
+| numrange: | Searches for numbers within a specific range. | site:example.com numrange:1000-2000 | Find pages on example.com containing numbers between 1000 and 2000. |  
+| allintext: | Finds pages containing all specified words in the body text. | allintext:admin password reset | Search for pages containing both "admin" and "password reset" in the body text. |  
+| allinurl: | Finds pages containing all specified words in the URL. | allinurl:admin panel | Look for pages with "admin" and "panel" in the URL. |  
+| allintitle: | Finds pages containing all specified words in the title. | allintitle:confidential report 2023 | Search for pages with "confidential," "report," and "2023" in the title. |  
+| AND | Narrows results by requiring all terms to be present. | site:example.com AND (inurl:admin OR inurl:login) | Find admin or login pages specifically on example.com. |  
+| OR | Broadens results by including pages with any of the terms. | "linux" OR "ubuntu" OR "debian" | Search for webpages mentioning Linux, Ubuntu, or Debian. |  
+| NOT | Excludes results containing the specified term. | site:bank.com NOT inurl:login | Find pages on bank.com excluding login pages. |  
+| * (wildcard) | Represents any character or word. | site:socialnetwork.com filetype:pdf user* manual | Search for user manuals (user guide, user handbook) in PDF format on socialnetwork.com. |  
+| .. (range search) | Finds results within a specified numerical range. | site:ecommerce.com "price" 100..500 | Look for products priced between 100 and 500 on an e-commerce website. |  
+| " " (quotation marks) | Searches for exact phrases. | "information security policy" | Find documents mentioning the exact phrase "information security policy". |  
+| - (minus sign) | Excludes terms from the search results. | site:news.com -inurl:sports | Search for news articles on news.com excluding sports-related content. |
 
 ## Javascript Obfuscation:
 
@@ -567,6 +589,53 @@ Filter by size of response:
 ## Virtual Host Enumeration
 
 <span class="cmd">gobuster vhost -u http://[MACHINE_IP] --domain example.thm --append-domain -w /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt</span>
+
+## Fingerprinting
+
+• Banner Grabbing  
+<span class="cmd">curl -I [domain]</span>  
+• Analysing HTTP Headers  
+Look at: <span class="cmd">Server </span>and<span class="cmd"> X-Powered-By</span>  
+• WhatWeb - Identify web technologies  
+<span class="cmd">whatweb [domain]</span>  
+• Wafw00f - Identify WAFs  
+<span class="cmd">pip3 install git+https://github.com/EnableSecurity/wafw00f</span>  
+<span class="cmd">wafw00f [domain]</span>  
+• Nikto - Web scanner and used in fingerprinting tech stack of website  
+<span class="cmd">sudo apt update &amp;&amp; sudo apt install -y perl</span>  
+<span class="cmd">git clone https://github.com/sullo/nikto</span>  
+<span class="cmd">cd nikto/program</span>  
+<span class="cmd">chmod +x ./nikto.pl</span>  
+<span class="cmd">nikto -h [domain] -Tuning b</span>  
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmd">-Tuning b</span> tells Nikto to only run the Software Identification modules.
+
+## Crawling
+
+Popular crawlers - Burp suite spider, OWASP ZAP, Scrapy (Python frameworl) and Apache Nutch (Scalable)  
+Custom crawler using Scapy:  
+<span class="cmd">python3 -m venv venv</span>  
+<span class="cmd">source ./venv/bin/activate</span>  
+<span class="cmd">pip3 install scrapy</span>  
+<span class="cmd">wget -O ReconSpider.zip https://cdn.services-k8s.prod.aws.htb.systems/content/modules/144/ReconSpider.v1.2.zip</span>  
+<span class="cmd">unzip ReconSpider.zip &amp;&amp; rm ReconSpider.zip</span>  
+<span class="cmd">python3 ReconSpider.py http://[domain]</span>  
+Output : results.json contains emails, links, external_files, js_files, form_fields, images, video, audio and comments
+
+## Automated Recon
+
+• [FinalRecon](https://github.com/thewhiteh4t/FinalRecon): All-in-one modular web recon  
+• [Recon-ng](https://github.com/lanmaster53/recon-ng): Modular recon framework  
+• [theHarvester](https://github.com/laramies/theHarvester): Email and subdomain harvester  
+• [SpiderFoot](https://github.com/smicallef/spiderfoot): Automated OSINT collection  
+• [OSINT Framework](https://osintframework.com/): Curated OSINT resource directory
+
+### FinalRecon
+
+<span class="cmd">git clone https://github.com/thewhiteh4t/FinalRecon.git</span>  
+<span class="cmd">cd FinalRecon; python3 -m venv venv; source ./venv/bin/activate</span>  
+<span class="cmd">pip3 install -r requirements.txt</span>  
+<span class="cmd">chmod +x ./finalrecon.py</span>  
+<span class="cmd">./finalrecon.py --help</span>
 
 ## DNS Zone Transfers
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Space_Grotesk, Source_Serif_4, IBM_Plex_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
@@ -51,6 +52,7 @@ export default function RootLayout({
           <Footer />
         </MotionProvider>
         <CodeCopyHandler />
+        <Analytics />
       </body>
     </html>
   );
